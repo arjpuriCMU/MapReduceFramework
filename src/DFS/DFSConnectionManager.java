@@ -31,6 +31,7 @@ public class DFSConnectionManager implements Runnable {
 				input_stream = new ObjectInputStream(data_node_socket.getInputStream());
 				Handshake handshake_msg = (Handshake) input_stream.readObject(); //assumes datanode will always send a message
 				this.nodeId_socket_map.put(handshake_msg.getNodeId(), data_node_socket);
+				master_name_node.node_ids.add(handshake_msg.getNodeId());
 			} catch (IOException e) {
 				e.printStackTrace();
 		

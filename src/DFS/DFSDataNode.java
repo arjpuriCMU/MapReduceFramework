@@ -32,11 +32,7 @@ public class DFSDataNode implements Remote  {
 		this.name_node_host = inetAddress;
 		this.port = port;
 		this.data_nodeId = data_nodeId;
-		try {
-			this.store_path = "./dfs_storage/" + InetAddress.getLocalHost().getHostName() + "/";
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
+		this.store_path = "./dfs_storage/" + data_nodeId + "/";
 	
 	}
 	
