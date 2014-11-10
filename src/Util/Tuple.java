@@ -9,6 +9,9 @@ public class Tuple<A,B> {
 		this.second = second;
 	}
 	
+	public Tuple() {
+	}
+
 	public A getFirst(){
 		return this.first;
 	}
@@ -22,10 +25,15 @@ public class Tuple<A,B> {
 		if (!(o instanceof Tuple)){
 			return false;
 		}
+		@SuppressWarnings("unchecked")
 		Tuple<A,B> tup = (Tuple<A,B>) o;
 		if (this.first != tup.getFirst() || this.second != tup.getSecond()){
 			return false;
 		}
 		return true;
+	}
+	
+	public int hashCode(){
+		return first.hashCode() + second.hashCode();
 	}
 }
