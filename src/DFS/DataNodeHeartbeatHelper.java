@@ -10,35 +10,39 @@ import java.rmi.server.UnicastRemoteObject;
 
 import Config.ConfigSettings;
 
-public class DataNodeHeartbeatHelper implements Runnable, Remote {
+public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runnable, HeartbeatHelperInterface {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3093276042895919449L;
 	private int port;
 	private String host;
 	private boolean active;
 	private String id;
+	private String node_id;
 	private final int REGISTRY_PORT = DFSConfig.REGISTRY_PORT;
-	public DataNodeHeartbeatHelper(String node_id,String host, int port){
+	public DataNodeHeartbeatHelper(String node_id,String host, int port) throws RemoteException{
 		this.host = host;
 		this.port = port;
 		active = true;
-		initOnRegistry();
+		this.node_id = node_id;
 		id = getHeartbeatHelperID();
+		initOnRegistry();
+		
 	}
 	
 	public String getHeartbeatHelperID(){
-		return id+ "heartbeat";
+		return node_id+ "heartbeat";
 	}
 	
 	private void initOnRegistry() {
-		DataNodeHeartbeatHelper current_stub;
+		System.out.println(port + ", " + id + ", " + host);
 		try {
-			current_stub = (DataNodeHeartbeatHelper) UnicastRemoteObject.exportObject(this,port);
-			Registry registry = LocateRegistry.getRegistry(host,port);
-			registry.bind(id, current_stub);	
+			Registry registry = LocateRegistry.getRegistry(host,REGISTRY_PORT);
+			registry.rebind(id, this);	
 		} catch (RemoteException e) {
 			e.printStackTrace();
-		} catch (AlreadyBoundException e) {
-			e.printStackTrace();
-		}
+		} 
 			
 	}
 
@@ -48,22 +52,27 @@ public class DataNodeHeartbeatHelper implements Runnable, Remote {
 
 	@Override
 	public void run() {
+		Registry registry;
+		HealthMonitor health_monitor = null;
+		try {
+			registry = LocateRegistry.getRegistry(this.host, REGISTRY_PORT);
+			health_monitor =  (HealthMonitor) registry.lookup(DFSConfig.HEALTH_MONITOR_ID);
+		} catch (RemoteException e1) {
+			e1.printStackTrace();
+		} catch (NotBoundException e) {
+			e.printStackTrace();
+		}
 		while (active){
-			Registry registry;
 			try {
-				registry = LocateRegistry.getRegistry(this.host, REGISTRY_PORT);
-				DFSHealthMonitor health_monitor =  (DFSHealthMonitor) registry.lookup(DFSConfig.HEALTH_MONITOR_ID);
-				health_monitor.changeHeartbeats(20);
+				health_monitor.changeHeartbeat(node_id,20);
 				Thread.sleep(ConfigSettings.heartbeat_frequency*1000);
 			} catch (RemoteException e) {
-				e.printStackTrace();
-			} catch (NotBoundException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			
 		}
-		
+		return;
 	}
 }

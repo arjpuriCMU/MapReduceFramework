@@ -1,8 +1,9 @@
 package Util;
 
+import java.io.Serializable;
 import java.net.Socket;
 
-public class Host {
+public class Host implements Serializable {
 	public final String hostname;
 	public final int port;
 	public final Socket socket = null;

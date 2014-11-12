@@ -1,7 +1,6 @@
 package DFS;
 
 import java.net.InetAddress;
-import java.net.Socket;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
@@ -10,27 +9,33 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import Config.ConfigSettings;
 
-public class DFSHealthMonitor implements Runnable, Remote {
+public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, HealthMonitor {
 
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private static int HEARTBEAT_FREQUENCY = ConfigSettings.heartbeat_frequency;
 	private ConcurrentHashMap<String, Integer> node_health_map;
 	private InetAddress nameNode_host;
 	private int port;
-	private List<String> node_ids;
+	private Set<String> node_ids;
 	private final int REGISTRY_PORT = DFSConfig.REGISTRY_PORT;
 
 	
-	public DFSHealthMonitor(List<String> node_ids, InetAddress inetAddress, int port) {
+	public DFSHealthMonitor(List<String> node_ids, InetAddress inetAddress, int port) throws RemoteException{
 		nameNode_host = inetAddress; 
-		this.port = port;
-		this.node_ids = node_ids;
+		this.setPort(port);
+		this.node_ids = new HashSet<String>(node_ids);
+		this.node_health_map = new ConcurrentHashMap<String,Integer>();
 		addToRegistry();
 		initializeHealth();
 		
@@ -38,11 +43,9 @@ public class DFSHealthMonitor implements Runnable, Remote {
 	}
 
 	private void addToRegistry() {
-		Remote current_stub;
 		try {
-			current_stub =  UnicastRemoteObject.exportObject(this,REGISTRY_PORT);
 			Registry registry = LocateRegistry.getRegistry(nameNode_host.getHostName(), REGISTRY_PORT);
-			registry.bind(DFSConfig.HEALTH_MONITOR_ID, current_stub);
+			registry.bind(DFSConfig.HEALTH_MONITOR_ID, this);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (AlreadyBoundException e) {
@@ -57,20 +60,21 @@ public class DFSHealthMonitor implements Runnable, Remote {
 		}
 	}
 	
-	public void addNode(String node){
+	public void addNode(String node) throws RemoteException{
 		node_ids.add(node);
-		node_health_map.put(node, 100);
+		node_health_map.put(node, 200);
 	}
 	
-	public void changeHeartbeats(Integer val){
+	public void changeHeartbeats(Integer val) throws RemoteException{
 		for (String node_id: node_ids){
 			node_health_map.put(node_id, node_health_map.get(node_id)+val);
 		}
 	}
 
-	public void dataNodeHeartbeat(String dataNodeId){
-		node_health_map.put(dataNodeId,node_health_map.get(dataNodeId)+20);
+	public void changeHeartbeat(String node_id, Integer val) throws RemoteException{
+			node_health_map.put(node_id, node_health_map.get(node_id)+val);
 	}
+	
 
 	@Override
 	public void run() {
@@ -79,12 +83,14 @@ public class DFSHealthMonitor implements Runnable, Remote {
 			try{
 				changeHeartbeats(-20);
 				Thread.sleep(HEARTBEAT_FREQUENCY*1000);
-				if ((dead_node_ids = findDeadNodes()) != null){
-					removeDeadNodes(dead_node_ids);
+				if ((dead_node_ids = findInactiveNodes()) != null){
+					removeInactiveNodes(dead_node_ids);
 				}
 			} catch (InterruptedException e) {
 				System.out.println("Health monitor interrupt");
 				return;
+			} catch (RemoteException e) {
+				e.printStackTrace();
 			}
 			finally{
 				
@@ -92,31 +98,25 @@ public class DFSHealthMonitor implements Runnable, Remote {
 		}
 	}
 
-	private void removeDeadNodes(List<String> dead_node_ids) {
+	private void removeInactiveNodes(List<String> dead_node_ids) {
 		Registry registry = null;
 		try {
 			registry = LocateRegistry.getRegistry(nameNode_host.getHostName(), REGISTRY_PORT);
+			DFSNameNodeInterface name_node = (DFSNameNodeInterface) registry.lookup(DFSConfig.NAME_NODE_ID);
 			for (int i = 0; i < dead_node_ids.size(); i++){
-				DFSDataNode temp_node = (DFSDataNode) registry.lookup(dead_node_ids.get(i));
-				DataNodeHeartbeatHelper heartbeat_helper  = (DataNodeHeartbeatHelper) registry.lookup(temp_node.getHeartbeatHelperID());
-				temp_node.setActive(false);
-				heartbeat_helper.setActive(false);
+				name_node.changeActiveStatus(dead_node_ids.get(i));
 				node_ids.remove(dead_node_ids.get(i));
+				name_node.moveBlocksFromInactive();
 			}
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		
-			
-			
-		
 	}
 
-	private List<String> findDeadNodes() {
+	private List<String> findInactiveNodes() {
 		List<String> dead_nodes = new ArrayList<String>();
 		for (String node_id: node_ids){
 			if (node_health_map.get(node_id) <=0){
@@ -132,10 +132,18 @@ public class DFSHealthMonitor implements Runnable, Remote {
 		
 	}
 
-	public void printAllHealth() {
+	public void printAllHealth() throws RemoteException {
 		for (String node_id: this.node_health_map.keySet()){
 			System.out.println(node_id + ": " + this.node_health_map.get(node_id));
 		}
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
 	}
 
 }

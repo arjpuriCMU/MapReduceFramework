@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -22,13 +23,12 @@ import Messages.Handshake;
 import Util.FileFunctions;
 import Util.Tuple;
 
-public class DFSDataNode implements Remote  {
+public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterface {
 
 	public InetAddress name_node_host;
 	public int port;
 	public boolean active;
 	public final String STORAGE_PATH = DFSConfig.DFS_STORAGE_PATH;
-	public ServerSocket server_socket;
 	public String data_nodeId;
 	public HashMap<String, List<DFSBlock>> file_block_replicas_map; 
 	public HashMap<Tuple<String,Integer>,File> block_file_map;
@@ -36,7 +36,7 @@ public class DFSDataNode implements Remote  {
 	private int health = 100;
 	private final int REGISTRY_PORT = DFSConfig.REGISTRY_PORT;
 	
-	public DFSDataNode(String data_nodeId, InetAddress inetAddress,int port){
+	public DFSDataNode(String data_nodeId, InetAddress inetAddress,int port) throws RemoteException{
 		this.active = true;
 		this.name_node_host = inetAddress;
 		this.port = port;
@@ -51,8 +51,34 @@ public class DFSDataNode implements Remote  {
 		this.active = bool;
 	}
 	
+	public String getNodeId(){
+		return this.data_nodeId;
+	}
+	
+	public void exitDataNode(){
+		Registry registry;
+		try {
+			registry = LocateRegistry.getRegistry(this.name_node_host.getHostAddress(), REGISTRY_PORT);
+			registry.unbind(this.data_nodeId);
+			registry.unbind(this.getHeartbeatHelperID());
+		} catch (RemoteException e) {
+		} catch (NotBoundException e) {
+			e.printStackTrace();
+		}
+		System.exit(0);
+		System.out.println("Exiting DataNode");
+	}
+	
 	public String getHeartbeatHelperID(){
 		return this.data_nodeId+ "heartbeat";
+	}
+	
+	public HashMap<Tuple<String,Integer>,File> getBlockFileMap(){
+		return this.block_file_map;
+	}
+	
+	public HashMap<String,List<DFSBlock>> getFileBlockReplicaMap(){
+		return this.file_block_replicas_map;
 	}
 	
 	@SuppressWarnings("resource")
@@ -62,19 +88,16 @@ public class DFSDataNode implements Remote  {
 			Socket socket = new Socket(name_node_host.getHostAddress(),port);
 			ObjectOutputStream output_stream = new ObjectOutputStream(socket.getOutputStream());
 			output_stream.writeObject(new Handshake(this.data_nodeId));
+			socket.close();
 			
 		} catch (IOException e) {
 			System.out.println("DFS Node unable to connect");
 		}
 		System.out.println("DFSDataNode ID " + this.data_nodeId + " binding with NameNode Registry");
-		Remote current_stub;
 		try {
-			current_stub =  UnicastRemoteObject.exportObject(this,REGISTRY_PORT);
 			Registry registry = LocateRegistry.getRegistry(this.name_node_host.getHostAddress(), REGISTRY_PORT);
-			registry.bind(this.data_nodeId, current_stub);
+			registry.rebind(this.data_nodeId, this);
 		} catch (RemoteException e) {
-			e.printStackTrace();
-		} catch (AlreadyBoundException e) {
 			e.printStackTrace();
 		} 
 		FileFunctions.createDirectory(store_path);
@@ -83,27 +106,20 @@ public class DFSDataNode implements Remote  {
 	}
 
 	private void startHeartbeat() {
-		System.out.println("Heartbeat Started");
-		DataNodeHeartbeatHelper heartbeat_helper = new DataNodeHeartbeatHelper(this.data_nodeId, name_node_host.getHostName(), port);
-		Thread th = new Thread(heartbeat_helper);
-		th.start();
-	}
-	
-	@SuppressWarnings("resource")
-	public void sendHeartbeatMessage(String host, int port){
+		DataNodeHeartbeatHelper heartbeat_helper = null;
 		try {
-			Socket socket = new Socket(host,port);
-			ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-			output.writeObject(new Handshake(this.data_nodeId));
-			output.flush();
-			
-		} catch (IOException e) {
+			heartbeat_helper = new DataNodeHeartbeatHelper(this.data_nodeId, name_node_host.getHostName(), port);
+		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-		
+		Thread th = new Thread(heartbeat_helper);
+		th.start();
+		System.out.println("Heartbeat Started");
 	}
+	
 
 	public void initiateBlock(File block_file, DFSBlock file_block) {
+		System.out.println("DataNode Id: " + this.data_nodeId + " recieved file block " + block_file.getName());
 		this.block_file_map.put(new Tuple<String,Integer>(file_block.getFileName(),file_block.getBlockNumber()),block_file);
 		if (!this.file_block_replicas_map.containsKey(file_block.getFileName())){
 			this.file_block_replicas_map.put(file_block.getFileName(), new ArrayList<DFSBlock>());
@@ -119,7 +135,5 @@ public class DFSDataNode implements Remote  {
 		}
 	}
 	
-	public static void main(String[] args){
-		
-	}
+	
 }

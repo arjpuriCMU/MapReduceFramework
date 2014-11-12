@@ -6,6 +6,11 @@ JC = javac
 
 CLASSES = \
 	Config/ConfigSettings.java \
+	DFS/ConnectionManagerInterface.java \
+	DFS/DFSNameNodeInterface.java \
+	DFS/HealthMonitor.java \
+	DFS/HeartbeatHelperInterface.java \
+	DFS/DataNodeInterface.java \
 	DFS/DataNodeHeartbeatHelper.java \
 	DFS/DFSBlock.java \
 	DFS/DFSConfig.java \
@@ -25,6 +30,11 @@ CLASSES = \
 
 RMCLASSES = \
 	Config/ConfigSettings.class \
+	DFS/ConnectionManagerInterface.class \
+	DFS/DFSNameNodeInterface.class \
+	DFS/HealthMonitor.class \
+	DFS/HeartbeatHelperInterface.class \
+	DFS/DataNodeInterface.class \
 	DFS/DataNodeHeartbeatHelper.class \
 	DFS/DFSBlock.class \
 	DFS/DFSConfig.class \

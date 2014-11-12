@@ -8,7 +8,6 @@ import DFS.DFSNameNode;
 
 public class Main {
 	public static void main(String[] args) throws IOException, ClassNotFoundException{
-		
 		DFSNameNode master = null;
 		if (args.length == 2){
 			if (args[0].toLowerCase().equals("-n")) {
@@ -26,7 +25,7 @@ public class Main {
 				String host = args[3];
 				InetAddress inet = InetAddress.getByName(host);
 				DFSDataNode data_node = new DFSDataNode(node_id,inet,port);
-				data_node.sendHeartbeatMessage(host, port);
+				data_node.start();
 			}
 			else{
 				System.out.println("Arguments were not recognized");

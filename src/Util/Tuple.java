@@ -1,6 +1,9 @@
 package Util;
 
-public class Tuple<A,B> {
+import java.io.Serializable;
+
+public class Tuple<A,B> implements Serializable {
+	private static final long serialVersionUID = 6152970163721457935L;
 	private A first;
 	private B second;
 	
@@ -22,18 +25,22 @@ public class Tuple<A,B> {
 	
 	@Override
 	public boolean equals(Object o){
-		if (!(o instanceof Tuple)){
+		if (!(o instanceof Tuple<?,?>)){
 			return false;
 		}
 		@SuppressWarnings("unchecked")
 		Tuple<A,B> tup = (Tuple<A,B>) o;
-		if (this.first != tup.getFirst() || this.second != tup.getSecond()){
-			return false;
+		if (this.first.equals(tup.getFirst()) && this.second.equals(tup.getSecond())){
+			return true;
 		}
-		return true;
+		return false;
+	}
+	
+	public String toString(){
+		return "|" + first + "," + second + "|";
 	}
 	
 	public int hashCode(){
-		return first.hashCode() + second.hashCode();
+		return Math.abs(first.hashCode() + second.hashCode());
 	}
 }
