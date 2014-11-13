@@ -1,8 +1,11 @@
 package DFS;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -129,12 +132,24 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			dfs_file = find_file(block.getFileName());
 			Tuple<String,Integer> tuple = new Tuple<String,Integer>(dfs_file.getFile().getName(),block.getBlockNumber());
 			block_file = block_file_map.get(tuple);
-			
+			byte[] byte_array = new byte[(int) block_file.length()];
+			FileInputStream fis = null;
+			try {
+				fis = new FileInputStream(block_file);
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			try {
+				bis.read(byte_array,0,byte_array.length);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 			file_block_host_map.put(new Tuple<DFSFile, DFSBlock>(dfs_file,block),destination_node);
 			block.getBlockHosts().add(this.nodeId_host_map.get(destination_node));
 			try {
 				DataNodeInterface current_data_node = (DataNodeInterface) this.main_registry.lookup(destination_node);
-				current_data_node.initiateBlock(block_file, block);
+				current_data_node.initiateBlock(byte_array, block);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			} catch (NotBoundException e) {
@@ -371,6 +386,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 						block_writer.close();
 						block_hosts = new HashSet<Host>();
 						file.getBlockIDMap().put(block_no, file_block);
+						byte[] byte_array = new byte[(int) block_file.length()];
+						FileInputStream fis = new FileInputStream(block_file);
+						BufferedInputStream bis = new BufferedInputStream(fis);
+						bis.read(byte_array,0,byte_array.length);
 						for (int j = 0; j < replication_factor; j++){//to distribute replicas
 							String node_id = data_node_queue.removeFirst();//next datablock in queue. this ensures replicas are on different nodes
 							Host host = this.nodeId_host_map.get(node_id);							
@@ -387,12 +406,12 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 						int replica_no = 1;
 						//Here we actually send the replicas to the corresponding data_nodes using java RMI
 						for (String nodeID : to_send_nodes){	
-							File copy = new File(file_block.getCustomPath(replica_no));
-							FileFunctions.copy(block_file, copy);
+//							File copy = new File(file_block.getCustomPath(replica_no));
+//							FileFunctions.copy(block_file, copy);
 							DataNodeInterface current_data_node = (DataNodeInterface) this.main_registry.lookup(nodeID);
-							current_data_node.initiateBlock(copy,file_block);
+							current_data_node.initiateBlock(byte_array,file_block);
 							replica_no++;
-							Files.delete(copy.toPath()); //delete the local replica
+//							Files.delete(copy.toPath()); //delete the local replica
 						}
 						Files.delete(block_file.toPath()); //delete the local block_file
 						to_send_nodes = new ArrayList<String>();
@@ -413,6 +432,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 					br.close();
 					block_hosts = new HashSet<Host>();
 					file.getBlockIDMap().put(block_no, file_block);
+					byte[] byte_array = new byte[(int) block_file.length()];
+					FileInputStream fis = new FileInputStream(block_file);
+					BufferedInputStream bis = new BufferedInputStream(fis);
+					bis.read(byte_array,0,byte_array.length);
 					for (int j = 0; j < replication_factor; j++){//to distribute replicas
 						String node_id = data_node_queue.removeFirst();//next datablock in queue. this ensures replicas are on different nodes
 						Host host = this.nodeId_host_map.get(node_id);							
@@ -429,12 +452,12 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 					int replica_no = 1;
 					//Here we actually send the replicas to the corresponding data_nodes using java RMI
 					for (String nodeID : to_send_nodes){	
-						File copy = new File(file_block.getCustomPath(replica_no));
-						FileFunctions.copy(block_file, copy);
+//						File copy = new File(file_block.getCustomPath(replica_no));
+//						FileFunctions.copy(block_file, copy);
 						DataNodeInterface current_data_node = (DataNodeInterface) this.main_registry.lookup(nodeID);
-						current_data_node.initiateBlock(copy,file_block);
+						current_data_node.initiateBlock(byte_array,file_block);
 						replica_no++;
-						Files.delete(copy.toPath()); //delete the local replica
+//						Files.delete(copy.toPath()); //delete the local replica
 					}
 					Files.delete(block_file.toPath());
 				}
@@ -498,8 +521,19 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			DFSFile dfs_file = find_file(block.getFileName());
 			tuple = new Tuple<String,Integer>(dfs_file.getFile().getName(),block.getBlockNumber());
 			block_file = block_file_map.get(tuple);
+			byte[] byte_array = new byte[(int) block_file.length()];
+			FileInputStream fis;
 			try {
-				current_data_node.initiateBlock(block_file, block);
+				fis = new FileInputStream(block_file);
+				BufferedInputStream bis = new BufferedInputStream(fis);
+				bis.read(byte_array,0,byte_array.length);
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				current_data_node.initiateBlock(byte_array, block);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
