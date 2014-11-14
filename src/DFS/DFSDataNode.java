@@ -123,6 +123,7 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 
 	public void initiateBlock(byte[] byte_array, DFSBlock file_block) {
 		System.out.println("DataNode Id: " + this.data_nodeId + " recieved file block " + file_block.getLocalBlockPath());
+		System.out.println(byte_array[0]);
 		File block_file = new File(file_block.getHostBlockPath(this.data_nodeId));
 		int bytesRead;
 		FileOutputStream fos;
@@ -143,12 +144,12 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		else{
 			this.file_block_replicas_map.get(file_block.getFileName()).add(file_block);
 		}
-		block_file.renameTo(new File(file_block.getHostBlockPath(this.data_nodeId)));
-		try {
-			FileFunctions.createFile(block_file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		block_file.renameTo(new File(file_block.getHostBlockPath(this.data_nodeId)));
+//		try {
+//			FileFunctions.createFile(block_file);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	
