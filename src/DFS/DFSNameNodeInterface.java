@@ -22,4 +22,6 @@ public interface DFSNameNodeInterface extends Remote {
 	public List<String> getActiveNodes() throws RemoteException;
 	public InetAddress getHost() throws RemoteException;
 	public void changeActiveStatus(String node_id) throws RemoteException;
+	public void bindFileFromByteArray(byte[] byte_array, String string) throws RemoteException;
+
 }

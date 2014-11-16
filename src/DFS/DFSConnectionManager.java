@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import Config.InternalConfig;
 import Messages.Handshake;
 import Util.Host;
 
@@ -22,7 +23,7 @@ public class DFSConnectionManager extends UnicastRemoteObject implements Runnabl
     private DFSNameNode master_name_node;
     private ConcurrentHashMap<String, Socket> nodeId_socket_map;
     private List<String> node_ids;
-    private final int REGISTRY_PORT = DFSConfig.REGISTRY_PORT;
+    private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
     private boolean active = true;
 
     public DFSConnectionManager(DFSNameNode dfsNameNode) throws RemoteException {
@@ -34,8 +35,8 @@ public class DFSConnectionManager extends UnicastRemoteObject implements Runnabl
 
     private void initOnRegistry() {
         try {
-            Registry registry = LocateRegistry.getRegistry(master_name_node.getHost().getHostName(), REGISTRY_PORT);
-            registry.bind(DFSConfig.CONNECTION_MANAGER_ID, this);
+            Registry registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, REGISTRY_PORT);
+            registry.bind(InternalConfig.CONNECTION_MANAGER_ID, this);
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (AlreadyBoundException e) {
@@ -91,13 +92,13 @@ public class DFSConnectionManager extends UnicastRemoteObject implements Runnabl
 
 
                     i++;
-                    Registry registry = LocateRegistry.getRegistry(master_name_node.getServerSocket().getInetAddress().getHostName()
+                    Registry registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST
                             , REGISTRY_PORT);
 
                     //Stores node as active
                     master_name_node.getIdActiveMap().put(handshake_msg.getNodeId(), true);
 
-                    HealthMonitor health_monitor = (HealthMonitor) registry.lookup(DFSConfig.HEALTH_MONITOR_ID);
+                    HealthMonitor health_monitor = (HealthMonitor) registry.lookup(InternalConfig.HEALTH_MONITOR_ID);
                     health_monitor.addNode(handshake_msg.getNodeId());
                     System.out.println("DataNode Id: " + handshake_msg.getNodeId() + " has started..");
                 }

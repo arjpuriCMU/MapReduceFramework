@@ -9,6 +9,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 import Config.ConfigSettings;
+import Config.InternalConfig;
 
 public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runnable, HeartbeatHelperInterface {
 	/**
@@ -20,7 +21,7 @@ public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runn
 	private boolean active;
 	private String id;
 	private String node_id;
-	private final int REGISTRY_PORT = DFSConfig.REGISTRY_PORT;
+	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
 	public DataNodeHeartbeatHelper(String node_id,String host, int port) throws RemoteException{
 		this.host = host;
 		this.port = port;
@@ -38,7 +39,7 @@ public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runn
 	private void initOnRegistry() {
 		System.out.println(port + ", " + id + ", " + host);
 		try {
-			Registry registry = LocateRegistry.getRegistry(host,REGISTRY_PORT);
+			Registry registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST,REGISTRY_PORT);
 			registry.rebind(id, this);	
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -55,8 +56,8 @@ public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runn
 		Registry registry;
 		HealthMonitor health_monitor = null;
 		try {
-			registry = LocateRegistry.getRegistry(this.host, REGISTRY_PORT);
-			health_monitor =  (HealthMonitor) registry.lookup(DFSConfig.HEALTH_MONITOR_ID);
+			registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, REGISTRY_PORT);
+			health_monitor =  (HealthMonitor) registry.lookup(InternalConfig.HEALTH_MONITOR_ID);
 		} catch (RemoteException e1) {
 			e1.printStackTrace();
 		} catch (NotBoundException e) {
