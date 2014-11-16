@@ -10,4 +10,8 @@ public class InternalConfig {
 	public static String MAP_REDUCE_MASTER_ID = "DFSNameNode";
 	public static String REGISTRY_HOST;
 	
+	public static String generateDataNodeId(String slave_id){
+		return slave_id + "datanode";
+	}
+	
 }

@@ -1,11 +1,13 @@
 package DFS;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -61,9 +63,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	public HashMap<Tuple<String,Integer>,File> block_file_map;
 	
 	/*TO DO*/
-	//MAKE SURE REPLICAS ARE ALSO TRACKED. RIGHT NOW HASHTABLE FORGETS REPLICAS?
-	//Gracefully close all datanodes and heartbeat helpers on quit
-	//If node restarts before death then reallocate all files
+	//Add the connection between job and files
 	
 	
 	public DFSNameNode(int port) throws RemoteException{
@@ -547,6 +547,27 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			main_registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, REGISTRY_PORT);
 			main_registry.rebind(InternalConfig.NAME_NODE_ID, this);	
 		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	/**
+	 *On a slave being created, the client provides a file that is sent to the 
+	 *name node to be distributed to the data nodes. 
+	 */
+	@Override
+	public void bindFileFromByteArray(byte[] byte_array, String name) throws RemoteException {
+		File file = new File(name);
+		int bytesRead;
+		FileOutputStream fos;
+		try {
+			fos = new FileOutputStream(file);
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			bos.write(byte_array, 0, byte_array.length);
+			bos.flush();
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		

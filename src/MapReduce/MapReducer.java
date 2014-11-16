@@ -13,6 +13,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -36,24 +39,29 @@ public class MapReducer {
     private DFSDataNode data_node;
     private Host master_host;
     private String name_node_host;
+    private Registry registry;
 
     /* Constructor that connects to master node of MapReduce system.
        ParticipantID specifies the name of this user for future use.
      */
     public MapReducer(String participantID, Host master_host) throws Exception {
-    	Registry registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
+    	registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
     	DFSNameNodeInterface name_node= (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
     	name_node_host = name_node.getHost().getHostName();
     	MapReduceMasterInterface master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
+    	String data_node_id = null;
     	try {
             InetAddress inet = InetAddress.getByName(name_node_host);
-            data_node = new DFSDataNode(participantID, inet, master_host.port);
+            data_node_id = InternalConfig.generateDataNodeId(participantID);
+            data_node = new DFSDataNode(data_node_id, inet, master_host.port);
             data_node.start();
         }
         catch (Exception e)
         {
             throw new Exception("Failed during Data Node Construction");
         }
+    	master.handshakeWithSlave(participantID,data_node_id); //establishes connection to master
+    
     }
 
     public void runJob(MapReduceInterface jobClass, File[] files){
@@ -61,9 +69,8 @@ public class MapReducer {
     }
 
 	private void SendFilesToNameNode(File[] files) {
-		Registry registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, REGISTRY_PORT);
 		for (File file : files){
-			byte[] byte_array = new byte[(int) file.length()];
+			byte[] byte_array = new byte[(int) file.length()]; //assume that file is always small enough to fit
 			FileInputStream fis;
 			try {
 				fis = new FileInputStream(file);
@@ -74,6 +81,14 @@ public class MapReducer {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+	    	try {
+	    		DFSNameNodeInterface name_node= (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
+	    		name_node.bindFileFromByteArray(byte_array, file.getName());
+	    	} catch (RemoteException | NotBoundException e) {
+				e.printStackTrace();
+			}
+
+			
 			
 		}
 	}
