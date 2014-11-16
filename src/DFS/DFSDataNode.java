@@ -1,6 +1,9 @@
 package DFS;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -41,7 +44,6 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		this.name_node_host = inetAddress;
 		this.port = port;
 		this.data_nodeId = data_nodeId;
-		this.active = true;
 		this.store_path = STORAGE_PATH + data_nodeId + "/";
 		file_block_replicas_map = new HashMap<String,List<DFSBlock>>();
 		block_file_map = new HashMap<Tuple<String,Integer>,File>();
@@ -50,7 +52,7 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 	public void setActive(boolean bool){
 		this.active = bool;
 	}
-	
+
 	public String getNodeId(){
 		return this.data_nodeId;
 	}
@@ -118,8 +120,22 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 	}
 	
 
-	public void initiateBlock(File block_file, DFSBlock file_block) {
-		System.out.println("DataNode Id: " + this.data_nodeId + " recieved file block " + block_file.getName());
+	public void initiateBlock(byte[] byte_array, DFSBlock file_block) {
+		System.out.println("DataNode Id: " + this.data_nodeId + " recieved file block " + file_block.getLocalBlockPath());
+		System.out.println(byte_array[0]);
+		File block_file = new File(file_block.getHostBlockPath(this.data_nodeId));
+		int bytesRead;
+		FileOutputStream fos;
+		try {
+			fos = new FileOutputStream(block_file);
+			BufferedOutputStream bos = new BufferedOutputStream(fos);
+			bos.write(byte_array, 0, byte_array.length);
+			bos.flush();
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		this.block_file_map.put(new Tuple<String,Integer>(file_block.getFileName(),file_block.getBlockNumber()),block_file);
 		if (!this.file_block_replicas_map.containsKey(file_block.getFileName())){
 			this.file_block_replicas_map.put(file_block.getFileName(), new ArrayList<DFSBlock>());
@@ -127,12 +143,12 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		else{
 			this.file_block_replicas_map.get(file_block.getFileName()).add(file_block);
 		}
-		block_file.renameTo(new File(file_block.getHostBlockPath(this.data_nodeId)));
-		try {
-			FileFunctions.createFile(block_file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		block_file.renameTo(new File(file_block.getHostBlockPath(this.data_nodeId)));
+//		try {
+//			FileFunctions.createFile(block_file);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	
