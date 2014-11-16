@@ -44,7 +44,6 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		this.name_node_host = inetAddress;
 		this.port = port;
 		this.data_nodeId = data_nodeId;
-		this.active = true;
 		this.store_path = STORAGE_PATH + data_nodeId + "/";
 		file_block_replicas_map = new HashMap<String,List<DFSBlock>>();
 		block_file_map = new HashMap<Tuple<String,Integer>,File>();
@@ -53,7 +52,7 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 	public void setActive(boolean bool){
 		this.active = bool;
 	}
-	
+
 	public String getNodeId(){
 		return this.data_nodeId;
 	}

@@ -85,7 +85,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			e.printStackTrace();
 		}
 		this.port = port;
-		initDFSFiles();
+		//initDFSFiles();
 	}
 	
 	private void initDFSFiles() {
@@ -230,6 +230,11 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+        /*
+            Starts Connection manager in background thread,
+            which listens for dataNode connections.
+         */
 		DFSConnectionManager connection_manager = null;
 		try {
 			connection_manager = new DFSConnectionManager(this);
@@ -238,19 +243,24 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		}
 		Thread connection_thread = new Thread(connection_manager);
 		connection_thread.start();
+
 		Scanner scanner = new Scanner(System.in);
 		String usrInput;
 		String[] args;
+
+        /* Command Line Shell for NameNode */
 		while(true){
 			System.out.print("NameNode -> ");
 			usrInput = scanner.nextLine();
 			args = usrInput.split(" ");
+
+            /* If user quits nameNode */
 			if (args[0].toLowerCase().equals("quit")){
 				try {
 					ConnectionManagerInterface c_manager = (ConnectionManagerInterface) this.main_registry.lookup(DFSConfig.CONNECTION_MANAGER_ID);
 					c_manager.setActive(false);
-				} catch (RemoteException | NotBoundException e1) {
-					e1.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 				
 				closeDataNodes();
@@ -262,8 +272,9 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 				}
 				System.exit(0);
 			}
-			processCLInput(args);
 
+
+			processCLInput(args);
 			if (args[0].toLowerCase().equals("help" )){
 				displayHelp();
 			}
@@ -273,14 +284,13 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	
 	
 	private void closeDataNodes() {
+        //Close each dataNode
 		for (String node_id: this.node_ids){
 			try {
 				DataNodeInterface data_node = (DataNodeInterface) this.main_registry.lookup(node_id);
 				data_node.exitDataNode();
 			} 
-			catch (UnmarshalException e){
-			}
-			catch (RemoteException | NotBoundException e) {
+			catch (Exception e) {
 				e.printStackTrace();
 			} 
 			
@@ -325,7 +335,8 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			}
 			System.out.println("----------------");
 		}
-		
+
+        /* Distributes Files */
 		else if (args[0].toLowerCase().equals("distribute_files") || args[0].toLowerCase().equals("df") ){
 			this.partitionAndDistributeFiles();
 		}
@@ -471,7 +482,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 
 	
 	public void listFiles(){
-		//To Do
+		//TODO
 	}
 	
 	
@@ -490,8 +501,8 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		return this.server_socket;
 	}
 
-	public void startHealthChecker(
-			List<String> node_ids) {
+    /* Constructs DFSHealthMonitor with given dataNodes */
+	public void startHealthChecker(List<String> node_ids) {
 		DFSHealthMonitor health_monitor = null;
 		try {
 			health_monitor = new DFSHealthMonitor(node_ids,InetAddress.getLocalHost(),port);
