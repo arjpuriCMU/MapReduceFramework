@@ -1,13 +1,6 @@
 package Util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 public class FileFunctions {
 
@@ -64,4 +57,20 @@ public class FileFunctions {
         in.close();
         out.close();
     }
+
+
+    /*
+        TODO: Write function to be able to get key and value (stored as strings)
+        for a the current line number. This will be utilized for the reduce
+        function. For now wait until implementing the reducer on a slave node
+        then come back to this
+     */
+    public static Tuple<String,String> returnKeyValue(File file){
+
+        //BufferedReader br = new BufferedReader(new FileReader(file));
+        return null;
+
+    }
+
+
 }
