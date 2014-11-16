@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import Config.ConfigSettings;
+import Config.InternalConfig;
 
 public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, HealthMonitor {
 
@@ -28,7 +29,7 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 	private InetAddress nameNode_host;
 	private int port;
 	private Set<String> node_ids;
-	private final int REGISTRY_PORT = DFSConfig.REGISTRY_PORT;
+	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
 
 	
 	public DFSHealthMonitor(List<String> node_ids, InetAddress inetAddress, int port) throws RemoteException{
@@ -44,8 +45,8 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 
 	private void addToRegistry() {
 		try {
-			Registry registry = LocateRegistry.getRegistry(nameNode_host.getHostName(), REGISTRY_PORT);
-			registry.bind(DFSConfig.HEALTH_MONITOR_ID, this);
+			Registry registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, REGISTRY_PORT);
+			registry.bind(InternalConfig.HEALTH_MONITOR_ID, this);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (AlreadyBoundException e) {
@@ -101,8 +102,8 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 	private void removeInactiveNodes(List<String> dead_node_ids) {
 		Registry registry = null;
 		try {
-			registry = LocateRegistry.getRegistry(nameNode_host.getHostName(), REGISTRY_PORT);
-			DFSNameNodeInterface name_node = (DFSNameNodeInterface) registry.lookup(DFSConfig.NAME_NODE_ID);
+			registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, REGISTRY_PORT);
+			DFSNameNodeInterface name_node = (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
 			for (int i = 0; i < dead_node_ids.size(); i++){
 				name_node.changeActiveStatus(dead_node_ids.get(i));
 				node_ids.remove(dead_node_ids.get(i));

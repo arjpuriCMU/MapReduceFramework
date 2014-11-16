@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import Config.InternalConfig;
 import Messages.Handshake;
 import Util.FileFunctions;
 import Util.Tuple;
@@ -31,13 +32,13 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 	public InetAddress name_node_host;
 	public int port;
 	public boolean active;
-	public final String STORAGE_PATH = DFSConfig.DFS_STORAGE_PATH;
+	public final String STORAGE_PATH = InternalConfig.DFS_STORAGE_PATH;
 	public String data_nodeId;
 	public HashMap<String, List<DFSBlock>> file_block_replicas_map; 
 	public HashMap<Tuple<String,Integer>,File> block_file_map;
 	private String store_path;
 	private int health = 100;
-	private final int REGISTRY_PORT = DFSConfig.REGISTRY_PORT;
+	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
 	
 	public DFSDataNode(String data_nodeId, InetAddress inetAddress,int port) throws RemoteException{
 		this.active = true;

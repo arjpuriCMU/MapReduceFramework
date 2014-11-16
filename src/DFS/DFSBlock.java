@@ -3,6 +3,7 @@ package DFS;
 import java.io.Serializable;
 import java.util.Set;
 
+import Config.InternalConfig;
 import Util.FileFunctions;
 import Util.Host;
 import Util.Tuple;
@@ -12,7 +13,7 @@ public class DFSBlock implements Serializable {
 	private int block_no;
 	private Set<Host> replica_hosts;
 	private Tuple<Integer,Integer> block_range;
-	public final String STORAGE_PATH = DFSConfig.DFS_STORAGE_PATH;
+	public final String STORAGE_PATH = InternalConfig.DFS_STORAGE_PATH;
 	private String file_name;
 	
 	
