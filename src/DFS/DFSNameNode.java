@@ -1,27 +1,20 @@
 package DFS;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
 import java.rmi.AccessException;
-import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.UnmarshalException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -34,11 +27,11 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import Util.FileFunctions;
 import Util.Host;
 import Util.Tuple;
-import Config.InternalConfig;
 import Config.ConfigSettings;
-import Util.FileFunctions;
+import Config.InternalConfig;
 
 public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInterface{
 	/**
