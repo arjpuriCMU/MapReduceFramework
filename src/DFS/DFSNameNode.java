@@ -61,9 +61,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	private final int SPLIT_SIZE = ConfigSettings.split_size;
 	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
 	public HashMap<Tuple<String,Integer>,File> block_file_map;
-	
+	public List<DFSFile> DFSFile_buffer; //before partitioning and sending out the files
 	/*TO DO*/
 	//Add the connection between job and files
+	//Store replicas and where there and how many left.
 	
 	
 	public DFSNameNode(int port) throws RemoteException{
@@ -76,6 +77,8 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		all_dfsFiles = new ArrayList<DFSFile>();
 		nodeId_block_map = new ConcurrentHashMap<String,List<DFSBlock>>();
 		block_file_map = new HashMap<Tuple<String,Integer>,File>();
+		
+		DFSFile_buffer = new ArrayList<DFSFile>();
 		this.port = port;
 		initDFSFiles();
 	}
@@ -549,14 +552,13 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-		
 	}
 	/**
 	 *On a slave being created, the client provides a file that is sent to the 
 	 *name node to be distributed to the data nodes. 
 	 */
 	@Override
-	public void bindFileFromByteArray(byte[] byte_array, String name) throws RemoteException {
+	public void bindFileFromByteArray(byte[] byte_array, String name, String job_id) throws RemoteException {
 		File file = new File(name);
 		int bytesRead;
 		FileOutputStream fos;
@@ -570,6 +572,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		DFSFile new_file = new DFSFile(file,job_id);
+		DFSFile_buffer.add(new_file);
+		
+		
 		
 	}
 

@@ -8,19 +8,24 @@ import java.util.Map;
 public class DFSFile implements Serializable {
 	private File dfs_file;
 	private Map<Integer, DFSBlock> blockId_block_map;
-	
-	public DFSFile(File f){
+	private final String  DFSFile_id;
+	//add unique identifier to file..
+	public DFSFile(File f, String DFSFile_id){
 		dfs_file = f;
 		blockId_block_map = new HashMap<Integer,DFSBlock>();
+		this.DFSFile_id = DFSFile_id;
 		
 	}
-	
 	public File getFile(){
 		return this.dfs_file;
 	}
 	
 	public Map<Integer, DFSBlock> getBlockIDMap(){
 		return this.blockId_block_map;
+	}
+
+	public String getDFSFile_id() {
+		return DFSFile_id;
 	}
 	
 }
