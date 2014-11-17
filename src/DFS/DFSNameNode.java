@@ -204,6 +204,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		String usrInput;
 		String[] args;
 
+        /* TODO: NameNode launched from Master in foreground so may infinite loop */
         /* Command Line Shell for NameNode */
 		while(true){
 			System.out.print("NameNode -> ");

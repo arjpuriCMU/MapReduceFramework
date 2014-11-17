@@ -18,6 +18,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -42,6 +43,7 @@ public class MapReducer {
     private DFSNameNodeInterface name_node;
     private MapReduceMasterInterface master;
     private String map_reducer_id;
+    private HashSet<String> jobIDs;
 
     /* Constructor that connects to master node of MapReduce system.
        ParticipantID specifies the name of this user for future use.
@@ -63,15 +65,16 @@ public class MapReducer {
     	master.handshakeWithSlave(participantID,data_node_id);
     }
 
-    public void runJob(MapReduceInterface jobClass, File[] files) throws Exception{
-        String jobID = "some shit";
-        registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
-
-    	SendFilesToNameNode(jobID,files);
+    //TODO: Jar file containing MapReduceInterface
+    public void runJob(String JarFileName, File[] files) throws Exception {
+        String jobID = master.createJob(map_reducer_id,JarFileName);
+        String[] fileIDs = SendFilesToNameNode(jobID,files);
+        master.startJob(jobID,fileIDs);
+        jobIDs.add(jobID);
     }
 
 	private String[] SendFilesToNameNode(String jobID, File[] files) {
-        String[] fileIDs = null;
+        Set<String> file_ids = null;
 		for (File file : files){
 			byte[] byte_array = new byte[(int) file.length()]; //assume that file is always small enough to fit
 			FileInputStream fis;
@@ -85,19 +88,18 @@ public class MapReducer {
 				e.printStackTrace();
 			}
 	    	try {
-	    		DFSNameNodeInterface name_node= (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
 	    		/*passes map_reducer_id to coordinate DFSNameNode file_buffer flushes to respective MapReducers */
 	    		name_node.bindFileFromByteArray(file.getName(),byte_array, jobID, this.map_reducer_id); 
-	    	} catch (RemoteException | NotBoundException e) {
+	    	} catch (RemoteException e) {
 				e.printStackTrace();
 			}
 		}
 		try {
-			Set<String> file_ids = name_node.flushFilesToDataNodes(this.map_reducer_id);
+			file_ids = name_node.flushFilesToDataNodes(this.map_reducer_id);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-        return fileIDs;
+        return (String[]) file_ids.toArray();
 	}
 
 	public String getMap_reducer_id() {
@@ -107,6 +109,6 @@ public class MapReducer {
 	public void setMap_reducer_id(String map_reducer_id) {
 		this.map_reducer_id = map_reducer_id;
 	}
-    
+
     
 }
