@@ -34,11 +34,11 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import Util.FileFunctions;
 import Util.Host;
 import Util.Tuple;
-import Config.ConfigSettings;
 import Config.InternalConfig;
+import Config.ConfigSettings;
+import Util.FileFunctions;
 
 public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInterface{
 	/**
@@ -82,8 +82,6 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	public Set<String> getNodeIds(){
 		return this.node_ids;
 	}
-	
-	
 	
 	public void moveBlocksFromInactive(){
 		System.out.println("Moving files from inactive dataNodes");

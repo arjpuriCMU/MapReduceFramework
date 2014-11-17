@@ -9,6 +9,7 @@ import Util.Host;
 import Util.Tuple;
 
 public class DFSBlock implements Serializable {
+	
 	private static final long serialVersionUID = 1042946964451470141L;
 	private int block_no;
 	private Set<Host> replica_hosts;
