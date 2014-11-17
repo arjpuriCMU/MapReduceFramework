@@ -18,6 +18,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Set;
 
 /**
  * Created by karansharma on 11/13/14.
@@ -92,7 +93,7 @@ public class MapReducer {
 			}
 		}
 		try {
-			name_node.flushFilesToDataNodes(this.map_reducer_id);
+			Set<String> file_ids = name_node.flushFilesToDataNodes(this.map_reducer_id);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
