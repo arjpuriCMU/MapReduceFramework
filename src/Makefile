@@ -6,6 +6,7 @@ JC = javac
 
 CLASSES = \
 	Config/ConfigSettings.java \
+	Config/InternalConfig.java \
 	DFS/ConnectionManagerInterface.java \
 	DFS/DFSNameNodeInterface.java \
 	DFS/HealthMonitor.java \
@@ -13,7 +14,6 @@ CLASSES = \
 	DFS/DataNodeInterface.java \
 	DFS/DataNodeHeartbeatHelper.java \
 	DFS/DFSBlock.java \
-	DFS/DFSConfig.java \
 	DFS/DFSConnectionManager.java \
 	DFS/DFSDataNode.java \
 	DFS/DFSFile.java \
@@ -24,12 +24,19 @@ CLASSES = \
 	Messages/Handshake.java \
 	Messages/Heartbeat.java \
 	Messages/Message.java \
+	MapReduce/MapReduceInterface.java \
+	MapReduce/MapReducer.java \
+	Master/JobHandler.java \
+	Master/MapReduceMasterInterface.java \
+	Master/ScheduleManager.java \
+	Master/ScheduleManagerInterface.java \
 	Util/FileFunctions.java \
 	Util/Host.java \
 	Util/Tuple.java \
 
 RMCLASSES = \
 	Config/ConfigSettings.class \
+	Config/InternalConfig.class \
 	DFS/ConnectionManagerInterface.class \
 	DFS/DFSNameNodeInterface.class \
 	DFS/HealthMonitor.class \
@@ -37,14 +44,18 @@ RMCLASSES = \
 	DFS/DataNodeInterface.class \
 	DFS/DataNodeHeartbeatHelper.class \
 	DFS/DFSBlock.class \
-	DFS/DFSConfig.class \
 	DFS/DFSConnectionManager.class \
 	DFS/DFSDataNode.class \
 	DFS/DFSFile.class \
 	DFS/DFSHealthMonitor.class \
 	DFS/DFSNameNode.class \
+	MapReduce/MapReduceInterface.class \
+	MapReduce/MapReducer.class \
 	Main/Main.class \
 	Master/Master.class \
+	Master/MapReduceMasterInterface.class \
+	Master/ScheduleManager.class \
+	Master/ScheduleManagerInterface.class \
 	Messages/Handshake.class \
 	Messages/Heartbeat.class \
 	Messages/Message.class \
