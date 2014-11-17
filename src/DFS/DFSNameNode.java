@@ -574,6 +574,4 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	}
 
 	
-
-	
 }

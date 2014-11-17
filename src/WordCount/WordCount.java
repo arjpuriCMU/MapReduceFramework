@@ -8,8 +8,8 @@ import Util.Tuple;
  */
 public class WordCount implements MapReduceInterface {
 
-    public String Map(String key){
-        return "";
+    public String Map(String record){
+        return null;
     }
 
     public Tuple<String,String> Reduce(Tuple<String,String> pair1, Tuple<String,String> pair2){

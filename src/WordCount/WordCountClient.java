@@ -19,8 +19,8 @@ public class WordCountClient {
         Host master = new Host(args[0],Integer.parseInt(args[1]));
         MapReducer map_reducer = new MapReducer("WordCounter",master);
 
-        File[] files = File[1];
-        File[0] = null;
-        map_reducer.runJob((MapReduceInterface) Class.forName("WordCount"),files);
+        //File[] files = File[1];
+        //File[0] = null;
+        //map_reducer.runJob((MapReduceInterface) Class.forName("WordCount"),files);
     }
 }

@@ -37,38 +37,39 @@ public class MapReducer {
 	//this data node has to get name node host for registry
 	
     private DFSDataNode data_node;
-    private Host master_host;
-    private String name_node_host;
     private Registry registry;
+    private DFSNameNodeInterface name_node;
+    private MapReduceMasterInterface master;
 
     /* Constructor that connects to master node of MapReduce system.
        ParticipantID specifies the name of this user for future use.
      */
     public MapReducer(String participantID, Host master_host) throws Exception {
+
+        /* Connect to Master Registry, and get name node and data node remote references */
     	registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
-    	DFSNameNodeInterface name_node= (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
-    	name_node_host = name_node.getHost().getHostName();
-    	MapReduceMasterInterface master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
-    	String data_node_id = null;
-    	try {
-            InetAddress inet = InetAddress.getByName(name_node_host);
-            data_node_id = InternalConfig.generateDataNodeId(participantID);
-            data_node = new DFSDataNode(data_node_id, inet, master_host.port);
-            data_node.start();
-        }
-        catch (Exception e)
-        {
-            throw new Exception("Failed during Data Node Construction");
-        }
-    	master.handshakeWithSlave(participantID,data_node_id); //establishes connection to master
-    
+        name_node= (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
+        master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
+
+        /* Construct and Start DFS dataNode layer (local) */
+        InetAddress inet = InetAddress.getByName(name_node.getHost().getHostName());
+        String data_node_id = InternalConfig.generateDataNodeId(participantID);
+        data_node = new DFSDataNode(data_node_id, inet, master_host.port);
+        data_node.start();
+
+        /* Establishes connection to master */
+    	master.handshakeWithSlave(participantID,data_node_id);
     }
 
-    public void runJob(MapReduceInterface jobClass, File[] files){
-    	SendFilesToNameNode(files);
+    public void runJob(MapReduceInterface jobClass, File[] files) throws Exception{
+        String jobID = "some shit";
+        registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
+
+    	SendFilesToNameNode(jobID,files);
     }
 
-	private void SendFilesToNameNode(File[] files) {
+	private String[] SendFilesToNameNode(String jobID, File[] files) {
+        String[] fileIDs = null;
 		for (File file : files){
 			byte[] byte_array = new byte[(int) file.length()]; //assume that file is always small enough to fit
 			FileInputStream fis;
@@ -87,10 +88,9 @@ public class MapReducer {
 	    	} catch (RemoteException | NotBoundException e) {
 				e.printStackTrace();
 			}
-
-			
 			
 		}
+        return fileIDs;
 	}
     
     

@@ -66,5 +66,4 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	}
 	
 	
-	
 }
