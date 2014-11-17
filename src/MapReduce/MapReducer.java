@@ -40,12 +40,13 @@ public class MapReducer {
     private Registry registry;
     private DFSNameNodeInterface name_node;
     private MapReduceMasterInterface master;
+    private String map_reducer_id;
 
     /* Constructor that connects to master node of MapReduce system.
        ParticipantID specifies the name of this user for future use.
      */
     public MapReducer(String participantID, Host master_host) throws Exception {
-
+    	this.setMap_reducer_id(participantID);
         /* Connect to Master Registry, and get name node and data node remote references */
     	registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
         name_node= (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
@@ -84,13 +85,26 @@ public class MapReducer {
 			}
 	    	try {
 	    		DFSNameNodeInterface name_node= (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
-	    		name_node.bindFileFromByteArray(byte_array, file.getName());
+	    		/*passes map_reducer_id to coordinate DFSNameNode file_buffer flushes to respective MapReducers */
+	    		name_node.bindFileFromByteArray(file.getName(),byte_array, jobID, this.map_reducer_id); 
 	    	} catch (RemoteException | NotBoundException e) {
 				e.printStackTrace();
 			}
-			
+		}
+		try {
+			name_node.flushFilesToDataNodes(this.map_reducer_id);
+		} catch (RemoteException e) {
+			e.printStackTrace();
 		}
         return fileIDs;
+	}
+
+	public String getMap_reducer_id() {
+		return map_reducer_id;
+	}
+
+	public void setMap_reducer_id(String map_reducer_id) {
+		this.map_reducer_id = map_reducer_id;
 	}
     
     
