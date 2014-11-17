@@ -26,6 +26,10 @@ CLASSES = \
 	Messages/Message.java \
 	MapReduce/MapReduceInterface.java \
 	MapReduce/MapReducer.java \
+	Master/JobHandler.java \
+	Master/MapReduceMasterInterface.java \
+	Master/ScheduleManager.java \
+	Master/ScheduleManagerInterface.java \
 	Util/FileFunctions.java \
 	Util/Host.java \
 	Util/Tuple.java \
@@ -45,8 +49,13 @@ RMCLASSES = \
 	DFS/DFSFile.class \
 	DFS/DFSHealthMonitor.class \
 	DFS/DFSNameNode.class \
+	MapReduce/MapReduceInterface.class \
+	MapReduce/MapReducer.class \
 	Main/Main.class \
 	Master/Master.class \
+	Master/MapReduceMasterInterface.class \
+	Master/ScheduleManager.class \
+	Master/ScheduleManagerInterface.class \
 	Messages/Handshake.class \
 	Messages/Heartbeat.class \
 	Messages/Message.class \
