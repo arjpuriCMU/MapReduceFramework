@@ -2,8 +2,6 @@ package MapReduce;
 
 import Util.Tuple;
 
-import java.io.File;
-
 /**
  * Created by karansharma on 11/13/14.
  */

@@ -59,6 +59,8 @@ RMCLASSES = \
 	Messages/Handshake.class \
 	Messages/Heartbeat.class \
 	Messages/Message.class \
+	MapReduce/MapReduceInterface.class \
+	MapReduce/MapReducer.class \
 	Util/FileFunctions.class \
 	Util/Host.class \
 	Util/Tuple.class \

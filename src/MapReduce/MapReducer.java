@@ -1,25 +1,22 @@
 package MapReduce;
 
-import Config.InternalConfig;
-import DFS.DFSDataNode;
-import DFS.DFSNameNodeInterface;
-import DFS.HealthMonitor;
-import Master.MapReduceMasterInterface;
-import Util.Host;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.rmi.AccessException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashSet;
 import java.util.Set;
+
+import Config.InternalConfig;
+import DFS.DFSDataNode;
+import DFS.DFSNameNodeInterface;
+import Master.MapReduceMasterInterface;
+import Util.Host;
 
 /**
  * Created by karansharma on 11/13/14.
