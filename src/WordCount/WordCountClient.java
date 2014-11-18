@@ -1,10 +1,7 @@
 package WordCount;
 
-import MapReduce.MapReduceInterface;
 import MapReduce.MapReducer;
 import Util.Host;
-
-import java.io.File;
 
 /**
  * Created by karansharma on 11/15/14.

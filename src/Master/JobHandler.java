@@ -1,9 +1,9 @@
 package Master;
 
-import Config.InternalConfig;
-
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+
+import Config.InternalConfig;
 
 /**
  * Created by karansharma on 11/17/14.

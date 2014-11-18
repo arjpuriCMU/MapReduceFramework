@@ -1,27 +1,20 @@
 package DFS;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
 import java.rmi.AccessException;
-import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.UnmarshalException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -34,21 +27,22 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import Config.ConfigSettings;
+import Config.InternalConfig;
+import Util.FileFunctions;
 import Util.Host;
 import Util.Tuple;
-import Config.InternalConfig;
-import Config.ConfigSettings;
-import Util.FileFunctions;
 
 public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInterface{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6201621654572231214L;
-	public ConcurrentHashMap<Tuple<DFSFile,DFSBlock>, String> file_block_host_map;
+	public ConcurrentHashMap<Tuple<DFSFile,DFSBlock>, String> file_block_host_map; /* Key- (FileId, BlockNo), value- byte[] corresponding to file */ 
 	public ConcurrentHashMap<String,Host> nodeId_host_map;
-	public ConcurrentHashMap<String,Boolean> nodeId_active_map;
+	public ConcurrentHashMap<String,Boolean> nodeId_active_map; /*Which nodes are active */
 	public ConcurrentHashMap<String,List<DFSBlock>> nodeId_block_map;
+	public ConcurrentHashMap<String,Set<DFSBlock>> fileID_block_map; /*File to corresponding block */ 
 	public Set<String> node_ids;
 	public int port;
 	public ServerSocket server_socket;
@@ -59,12 +53,12 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	private String INIT_DIRECTORY = ConfigSettings.init_file_directory;
 	private final int SPLIT_SIZE = ConfigSettings.split_size;
 	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
-	public HashMap<Tuple<String,Integer>,byte[]> block_file_map;
+	public HashMap<Tuple<String,Integer>,byte[]> fileID_block_file_map;
 	public ConcurrentHashMap<String,List<DFSFile>> slave_dfsfile_buffer; //before partitioning and sending out the files
 	/*TO DO*/
 	//Add the connection between job and files
 	//Store replicas and where there and how many left.
-	
+	//TODO Map jobIds to particular file
 	
 	public DFSNameNode(int port) throws RemoteException{
 		node_ids = new HashSet<String>();
@@ -72,15 +66,20 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		nodeId_host_map  = new ConcurrentHashMap<String,Host>();
 		nodeId_active_map = new ConcurrentHashMap<String,Boolean>();
 		all_dfsFiles = new ArrayList<DFSFile>();
-		nodeId_block_map = new ConcurrentHashMap<String,List<DFSBlock>>();
-		block_file_map = new HashMap<Tuple<String,Integer>,byte[]>();
+		nodeId_block_map = new ConcurrentHashMap<String,List<DFSBlock>>(); /* What blocks each data node has */
+		fileID_block_file_map = new HashMap<Tuple<String,Integer>,byte[]>(); 
 		slave_dfsfile_buffer = new ConcurrentHashMap<String,List<DFSFile>>();
+		fileID_block_map = new ConcurrentHashMap<String,Set<DFSBlock>>();
 		this.port = port;
 	}
 	
-	
 	public Set<String> getNodeIds(){
 		return this.node_ids;
+	}
+	
+	
+	public ConcurrentHashMap<String,Set<DFSBlock>> getFileIDBlockMap(){
+		return fileID_block_map;
 	}
 	
 	public void moveBlocksFromInactive(){
@@ -88,10 +87,13 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		List<DFSBlock> unassociated_replica_blocks = new ArrayList<DFSBlock>();
 		List<String> active_nodes = getActiveNodes();
 		List<String> inactive_nodes = new ArrayList<String>();
+		
+		/*Look for all the inactive nodes, and get the blocks corresponding blocks to move */
 		for (String node_id : this.nodeId_active_map.keySet()){
 			if (nodeId_active_map.get(node_id) == false){
 				unassociated_replica_blocks.addAll(nodeId_block_map.get(node_id));
 				inactive_nodes.add(node_id);
+				removeInactiveNodeFromBlocks(node_id);
 			}	
 		}
 		LinkedList<String> queue = new LinkedList<String>();
@@ -101,13 +103,14 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		String destination_node;
 		DFSFile dfs_file;
 		File block_file;
+		/*Go through all the blocks that need to be moved */
 		for (DFSBlock block : unassociated_replica_blocks){
 			destination_node = queue.removeFirst();
 			queue.addLast(destination_node);
 			dfs_file = find_file(block.getFileName());
-			Tuple<String,Integer> tuple = new Tuple<String,Integer>(dfs_file.getFile().getName(),block.getBlockNumber());
+			Tuple<String,Integer> tuple = new Tuple<String,Integer>(dfs_file.getDFSFile_id(),block.getBlockNumber());
 			
-			byte[] byte_array = block_file_map.get(tuple);
+			byte[] byte_array = fileID_block_file_map.get(tuple);
 			file_block_host_map.put(new Tuple<DFSFile, DFSBlock>(dfs_file,block),destination_node);
 			block.getBlockHosts().add(this.nodeId_host_map.get(destination_node));
 			try {
@@ -133,6 +136,13 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		}
 	}
 	
+	private void removeInactiveNodeFromBlocks(String node_id) {
+		for (DFSBlock block : nodeId_block_map.get(node_id)){
+			block.getBlockHosts().remove(node_id);
+		}
+	}
+
+
 	private void RemoveNodesFromHostMap(String node_id) {
 		for (Tuple<DFSFile, DFSBlock> tuple: this.file_block_host_map.keySet()){
 			if (file_block_host_map.get(tuple).equals(node_id)){
@@ -236,8 +246,6 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		}
 	}
 	
-	
-	
 	private void closeDataNodes() {
         //Close each dataNode
 		for (String node_id: this.node_ids){
@@ -337,7 +345,8 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			int line_no = 0;
 			int block_no = 0;
 			int previous_block_end = 0;
-			DFSBlock file_block = new DFSBlock(file.getFile().getName(), block_no, new Tuple<Integer,Integer>(), null);
+			DFSBlock file_block = new DFSBlock(file.getFile().getName(),file.getDFSFile_id(), block_no, new Tuple<Integer,Integer>(), null);
+			Set<DFSBlock> all_blocks = new HashSet<DFSBlock>();
 			Set<Host> block_hosts = new HashSet<Host>();
 			List<String> to_send_nodes = new ArrayList<String>();
 			boolean isEmpty = true;
@@ -348,30 +357,31 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			int line_length = (int) (file.getFile().length()/line_count);
 			byte[] byte_array = new byte[line_length*SPLIT_SIZE];
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
+			
 			try {
 				br = new BufferedReader(new FileReader(file.getFile()));
 				while ((line = br.readLine()) != null){ //loop through all lines
 					if (line_no % SPLIT_SIZE == 0 && line_no != 0){  //when we need to split
 						block_hosts = new HashSet<Host>();
 						file.getBlockIDMap().put(block_no, file_block);
-						
 						for (int j = 0; j < replication_factor; j++){//to distribute replicas
 							String node_id = data_node_queue.removeFirst();//next datablock in queue. this ensures replicas are on different nodes
 							Host host = this.nodeId_host_map.get(node_id);
 							/*Pick a host to send to from queue, then enqueue same host */
 							block_hosts.add(host);
 							data_node_queue.addLast(node_id);
-							
 							to_send_nodes.add(node_id);
+							
 							file_block_host_map.put(new Tuple<DFSFile, DFSBlock>(file,file_block),node_id);
 							file_block.setBlockHosts(block_hosts);
 							file_block.setBlockRange(new Tuple<Integer,Integer>(previous_block_end,line_no-1));
 							file.getBlockIDMap().put(block_no, file_block);
 							nodeId_block_map.get(node_id).add(file_block);
 							/*store byte_array to corresponding block */
-							this.block_file_map.put(new Tuple<String,Integer>(file_block.getFileName(),file_block.getBlockNumber()),byte_array);
+							this.fileID_block_file_map.put(new Tuple<String,Integer>(file.getDFSFile_id(),file_block.getBlockNumber()),byte_array);
+							
 						}
+						all_blocks.add(file_block);
 						int replica_no = 1;
 						//Here we actually send the replicas to the corresponding data_nodes using java RMI
 						for (String nodeID : to_send_nodes){	
@@ -383,7 +393,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 						isEmpty = true;
 						previous_block_end = line_no;
 						block_no++;
-						file_block = new DFSBlock(file.getFile().getName(),block_no,new Tuple<Integer,Integer>(),null);
+						file_block = new DFSBlock(file.getFile().getName(),file.getDFSFile_id(),block_no,new Tuple<Integer,Integer>(),null);
 						byte_array = new byte[line_length*SPLIT_SIZE];
 					}
 					bos.write(byte_array, line_no * line_length,line_length);
@@ -406,8 +416,9 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 						file_block.setBlockRange(new Tuple<Integer,Integer>(previous_block_end,line_no-1));
 						file.getBlockIDMap().put(block_no, file_block);
 						nodeId_block_map.get(node_id).add(file_block);
-						this.block_file_map.put(new Tuple<String,Integer>(file_block.getFileName(),file_block.getBlockNumber()),byte_array);
+						this.fileID_block_file_map.put(new Tuple<String,Integer>(file.getDFSFile_id(),file_block.getBlockNumber()),byte_array);
 					}
+					all_blocks.add(file_block);
 					int replica_no = 1;
 					//Here we actually send the replicas to the corresponding data_nodes using java RMI
 					for (String nodeID : to_send_nodes){	
@@ -421,6 +432,8 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			} catch (NotBoundException e) {
 				System.out.println("DataNode not bound to NameNode yet!");
 			}
+			this.fileID_block_map.put(file.getDFSFile_id(),all_blocks);
+			all_blocks = new HashSet<DFSBlock>();
 		}
 	}
 
@@ -459,7 +472,6 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 
 	/* On data node failure and resurrection, the files will be returned to the data node */
 	public void returnFilesToNode(String nodeId) {
-		File block_file;
 		Tuple<String,Integer> tuple;
 		DataNodeInterface current_data_node = null;
 		try {
@@ -473,8 +485,8 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		}
 		for (DFSBlock block : this.nodeId_block_map.get(nodeId)){
 			DFSFile dfs_file = find_file(block.getFileName());
-			tuple = new Tuple<String,Integer>(dfs_file.getFile().getName(),block.getBlockNumber());
-			byte[] byte_array =  block_file_map.get(tuple);
+			tuple = new Tuple<String,Integer>(dfs_file.getDFSFile_id(),block.getBlockNumber());
+			byte[] byte_array =  fileID_block_file_map.get(tuple);
 			FileInputStream fis;
 			try {
 				current_data_node.initiateBlock(byte_array, block,dfs_file.getDFSFile_id());
@@ -526,7 +538,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	}
 
 	@Override
-	public Set<String> flushFilesToDataNodes(String map_reducer_id) {
+	public void flushFilesToDataNodes(String map_reducer_id) {
 		this.all_dfsFiles.addAll(this.slave_dfsfile_buffer.get(map_reducer_id));
 		try {
 			this.partitionAndDistributeFiles(this.slave_dfsfile_buffer.get(map_reducer_id));
@@ -540,7 +552,6 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		}
 		delete_buffer_files(map_reducer_id);
 		this.slave_dfsfile_buffer.put(map_reducer_id,new ArrayList<DFSFile>());
-		return file_ids;
 	}
 	
 	/* TODO delete files if created on name node directory */
