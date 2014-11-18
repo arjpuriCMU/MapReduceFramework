@@ -94,7 +94,7 @@ public class MapReducer {
 			}
 		}
 		try {
-			name_node.flushFilesToDataNodes(this.map_reducer_id);
+			Set<String> file_ids = name_node.flushFilesToDataNodes(this.map_reducer_id);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

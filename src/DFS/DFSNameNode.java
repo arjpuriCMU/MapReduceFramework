@@ -538,7 +538,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	}
 
 	@Override
-	public void flushFilesToDataNodes(String map_reducer_id) {
+	public Set<String> flushFilesToDataNodes(String map_reducer_id) {
 		this.all_dfsFiles.addAll(this.slave_dfsfile_buffer.get(map_reducer_id));
 		try {
 			this.partitionAndDistributeFiles(this.slave_dfsfile_buffer.get(map_reducer_id));
@@ -552,6 +552,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		}
 		delete_buffer_files(map_reducer_id);
 		this.slave_dfsfile_buffer.put(map_reducer_id,new ArrayList<DFSFile>());
+		return file_ids;
 	}
 	
 	/* TODO delete files if created on name node directory */
