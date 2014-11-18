@@ -44,6 +44,7 @@ public class MapReducer {
     private MapReduceMasterInterface master;
     private String map_reducer_id;
     private HashSet<String> jobIDs;
+    private TaskManager task_manager;
 
     /* Constructor that connects to master node of MapReduce system.
        ParticipantID specifies the name of this user for future use.
@@ -60,6 +61,8 @@ public class MapReducer {
         String data_node_id = InternalConfig.generateDataNodeId(participantID);
         data_node = new DFSDataNode(data_node_id, inet, master_host.port);
         data_node.start();
+        task_manager = new TaskManager(data_node_id,Runtime.getRuntime().availableProcessors());
+        (new Thread(task_manager)).start();
 
         /* Establishes connection to master */
     	master.handshakeWithSlave(participantID,data_node_id);
@@ -68,13 +71,12 @@ public class MapReducer {
     //TODO: Jar file containing MapReduceInterface
     public void runJob(String JarFileName, File[] files) throws Exception {
         String jobID = master.createJob(map_reducer_id,JarFileName);
-        String[] fileIDs = SendFilesToNameNode(jobID,files);
-        master.startJob(jobID,fileIDs);
+        SendFilesToNameNode(jobID, files);
+        master.startJob(jobID);
         jobIDs.add(jobID);
     }
 
-	private String[] SendFilesToNameNode(String jobID, File[] files) {
-        Set<String> file_ids = null;
+	private void SendFilesToNameNode(String jobID, File[] files) {
 		for (File file : files){
 			byte[] byte_array = new byte[(int) file.length()]; //assume that file is always small enough to fit
 			FileInputStream fis;
@@ -95,11 +97,11 @@ public class MapReducer {
 			}
 		}
 		try {
-			file_ids = name_node.flushFilesToDataNodes(this.map_reducer_id);
+			name_node.flushFilesToDataNodes(this.map_reducer_id);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-        return (String[]) file_ids.toArray();
+        return;
 	}
 
 	public String getMap_reducer_id() {

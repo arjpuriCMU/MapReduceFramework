@@ -7,6 +7,6 @@ public interface MapReduceMasterInterface extends Remote {
 
 	public void handshakeWithSlave(String participantID, String data_node_id) throws RemoteException;
     public String createJob(String participantID,String JarFileName);
-    public void startJob(String jobID, String[] fileIDs) throws Exception;
+    public void startJob(String jobID) throws Exception;
 
 }
