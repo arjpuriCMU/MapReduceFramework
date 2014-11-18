@@ -16,13 +16,14 @@ public class DFSBlock implements Serializable {
 	private Tuple<Integer,Integer> block_range;
 	public final String STORAGE_PATH = InternalConfig.DFS_STORAGE_PATH;
 	private String file_name;
+	private String file_id;
 	
-	
-	public DFSBlock(String file_name, int block_no, Tuple<Integer,Integer> range, Set<Host> replica_hosts){
+	public DFSBlock(String file_name, String file_id, int block_no, Tuple<Integer,Integer> range, Set<Host> replica_hosts){
 		this.block_no = block_no;
 		this.block_range = range;
 		this.replica_hosts = replica_hosts;
 		this.file_name = file_name;
+		this.file_id = file_id;
 	}
 	public String getLocalBlockPath(){
 		String file_name_no_ext = this.file_name.replaceFirst("[.][^.]+$", "");
