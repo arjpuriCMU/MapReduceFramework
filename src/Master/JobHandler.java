@@ -27,17 +27,21 @@ public class JobHandler {
        this.jobID = jobID;
    }
 
-   public void start() throws Exception{
+   public void start(Set<String> file_ids) throws Exception{
        this.active = true;
        registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
        name_node = (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
        scheduler = (ScheduleManagerInterface) registry.lookup("Scheduler");
 
 
-       List<DFSBlock> blocksSet = name_node.getIdBlockMap().get(jobID);
 
-       for(DFSBlock block : blocksSet)
+       for(String file_id : file_ids)
        {
+           Set<DFSBlock> dfsBlocks = name_node.getFileIDBlockMap().get(file_id);
+           for(DFSBlock dfsBlock : dfsBlocks)
+           {
+
+           }
 
            /* Try to run map operation for each block */
 

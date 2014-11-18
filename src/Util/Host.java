@@ -29,7 +29,12 @@ public class Host implements Serializable {
 		}
 		
 		Host host = (Host) o;
-		return hostname.equalsIgnoreCase(host.hostname);
+
+        if(host.port != this.port)
+            return false;
+
+
+        return hostname.equalsIgnoreCase(host.hostname);
 	}
 	
 	public int hashCode(){

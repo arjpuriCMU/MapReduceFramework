@@ -68,12 +68,13 @@ public class MapReducer {
     //TODO: Jar file containing MapReduceInterface
     public void runJob(String JarFileName, File[] files) throws Exception {
         String jobID = master.createJob(map_reducer_id,JarFileName);
-        SendFilesToNameNode(jobID, files);
-        master.startJob(jobID);
+        Set<String> file_ids = SendFilesToNameNode(jobID, files);
+        master.startJob(jobID,file_ids);
         jobIDs.add(jobID);
     }
 
-	private void SendFilesToNameNode(String jobID, File[] files) {
+	private Set<String> SendFilesToNameNode(String jobID, File[] files) {
+        Set<String> file_ids = null;
 		for (File file : files){
 			byte[] byte_array = new byte[(int) file.length()]; //assume that file is always small enough to fit
 			FileInputStream fis;
@@ -94,11 +95,11 @@ public class MapReducer {
 			}
 		}
 		try {
-			Set<String> file_ids = name_node.flushFilesToDataNodes(this.map_reducer_id);
+			file_ids = name_node.flushFilesToDataNodes(this.map_reducer_id);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-        return;
+        return file_ids;
 	}
 
 	public String getMap_reducer_id() {

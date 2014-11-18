@@ -92,8 +92,8 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
         return jobID;
     }
 
-    public void startJob(String jobID) throws Exception{
-        jobs.get(jobID).start();
+    public void startJob(String jobID,Set<String> file_ids) throws Exception{
+        jobs.get(jobID).start(file_ids);
     }
 	
 }
