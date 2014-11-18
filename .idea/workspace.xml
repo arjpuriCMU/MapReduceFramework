@@ -2,52 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="86f807ee-2131-4469-b068-2528ec61f946" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/MapReduce/KeyValuePair.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/MapReduce/Mapper.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/MapReduce/MapperCollector.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/MapReduce/Reducer.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/MapReduce/ReducerCollector.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Config/ConfigSettings.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Config/InternalConfig.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/ConnectionManagerInterface.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/DFSBlock.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/DFSConnectionManager.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/DFSDataNode.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/DFSFile.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/DFSHealthMonitor.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/DFSNameNode.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/DFSNameNodeInterface.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/DataNodeHeartbeatHelper.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/DataNodeInterface.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/HealthMonitor.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/DFS/HeartbeatHelperInterface.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Main/Main.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/MapReduce/MapReduceInterface.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/MapReduce/MapReducer.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Master/MapReduceMasterInterface.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Master/Master.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Master/ScheduleManager.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Master/ScheduleManagerInterface.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Messages/Handshake.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Messages/Heartbeat.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Messages/Message.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Util/FileFunctions.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Util/Host.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/Util/Tuple.class" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mapReduce.jar" afterPath="$PROJECT_DIR$/src/mapReduce.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/DFS/DFSBlock.java" afterPath="$PROJECT_DIR$/src/DFS/DFSBlock.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/DFS/DFSConnectionManager.java" afterPath="$PROJECT_DIR$/src/DFS/DFSConnectionManager.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/DFS/DFSDataNode.java" afterPath="$PROJECT_DIR$/src/DFS/DFSDataNode.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/DFS/DFSHealthMonitor.java" afterPath="$PROJECT_DIR$/src/DFS/DFSHealthMonitor.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/DFS/DFSNameNode.java" afterPath="$PROJECT_DIR$/src/DFS/DFSNameNode.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/DFS/DFSNameNodeInterface.java" afterPath="$PROJECT_DIR$/src/DFS/DFSNameNodeInterface.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/DFS/DataNodeHeartbeatHelper.java" afterPath="$PROJECT_DIR$/src/DFS/DataNodeHeartbeatHelper.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Util/FileFunctions.java" afterPath="$PROJECT_DIR$/src/Util/FileFunctions.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Master/JobHandler.java" afterPath="$PROJECT_DIR$/src/Master/JobHandler.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Makefile" afterPath="$PROJECT_DIR$/src/Makefile" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/MapReduce/MapReduceInterface.java" afterPath="$PROJECT_DIR$/src/MapReduce/MapReduceInterface.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/MapReduce/MapReducer.java" afterPath="$PROJECT_DIR$/src/MapReduce/MapReducer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/WordCount/WordCountClient.java" afterPath="$PROJECT_DIR$/src/WordCount/WordCountClient.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Master/ScheduleManager.java" afterPath="$PROJECT_DIR$/src/Master/ScheduleManager.java" />
     </list>
     <ignored path="MapReduce.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -73,7 +29,7 @@
       <file leaf-file-name="ScheduleManager.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Master/ScheduleManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="375">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="390">
               <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
               <folding />
             </state>
@@ -84,17 +40,27 @@
         <entry file="file://$PROJECT_DIR$/src/Master/Master.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1290">
-              <caret line="17" column="13" selection-start-line="17" selection-start-column="13" selection-end-line="17" selection-end-column="13" />
+              <caret line="34" column="43" selection-start-line="34" selection-start-column="43" selection-end-line="34" selection-end-column="43" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DFSBlock.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/DFS/DFSBlock.java">
+      <file leaf-file-name="DFSNameNode.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/DFS/DFSNameNode.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="165" max-vertical-offset="960">
-              <caret line="33" column="53" selection-start-line="33" selection-start-column="42" selection-end-line="33" selection-end-column="53" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="2189" max-vertical-offset="7905">
+              <caret line="50" column="38" selection-start-line="50" selection-start-column="4" selection-end-line="50" selection-end-column="38" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="DFSNameNodeInterface.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/DFS/DFSNameNodeInterface.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="405">
+              <caret line="22" column="23" selection-start-line="22" selection-start-column="23" selection-end-line="22" selection-end-column="23" />
               <folding />
             </state>
           </provider>
@@ -103,23 +69,13 @@
       <file leaf-file-name="JobHandler.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Master/JobHandler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.42915532" vertical-offset="0" max-vertical-offset="765">
-              <caret line="21" column="34" selection-start-line="21" selection-start-column="34" selection-end-line="21" selection-end-column="34" />
+            <state vertical-scroll-proportion="0.4482289" vertical-offset="76" max-vertical-offset="825">
+              <caret line="27" column="4" selection-start-line="27" selection-start-column="4" selection-end-line="27" selection-end-column="4" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#476#477#0" expanded="true" />
-                <element signature="e#508#509#0" expanded="true" />
+                <element signature="e#542#543#0" expanded="true" />
+                <element signature="e#574#575#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DFSConnectionManager.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/DFS/DFSConnectionManager.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="45" max-vertical-offset="1545">
-              <caret line="18" column="13" selection-start-line="18" selection-start-column="13" selection-end-line="18" selection-end-column="13" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -129,6 +85,16 @@
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="255">
               <caret line="9" column="37" selection-start-line="9" selection-start-column="37" selection-end-line="9" selection-end-column="37" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ScheduleManagerInterface.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/Master/ScheduleManagerInterface.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="225">
+              <caret line="7" column="57" selection-start-line="7" selection-start-column="57" selection-end-line="7" selection-end-column="57" />
               <folding />
             </state>
           </provider>
@@ -144,34 +110,24 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="MRHealthMonitor.java" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/Master/MRHealthMonitor.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="165">
+              <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="TaskManager.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/MapReduce/TaskManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="180" max-vertical-offset="1005">
+            <state vertical-scroll-proportion="0.0" vertical-offset="195" max-vertical-offset="1005">
               <caret line="44" column="0" selection-start-line="44" selection-start-column="0" selection-end-line="44" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Map.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/MapReduce/Map.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="225">
-              <caret line="6" column="15" selection-start-line="6" selection-start-column="15" selection-end-line="6" selection-end-column="15" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MapReduceInterface.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/MapReduce/MapReduceInterface.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="255">
-              <caret line="7" column="17" selection-start-line="7" selection-start-column="17" selection-end-line="7" selection-end-column="17" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -199,13 +155,13 @@
         <option value="$PROJECT_DIR$/src/DFS/DFSDataNode.java" />
         <option value="$PROJECT_DIR$/src/DFS/DFSNameNode.java" />
         <option value="$PROJECT_DIR$/src/Master/ScheduleManagerInterface.java" />
-        <option value="$PROJECT_DIR$/src/Master/ScheduleManager.java" />
         <option value="$PROJECT_DIR$/src/Master/MapReduceMasterInterface.java" />
         <option value="$PROJECT_DIR$/src/Master/Master.java" />
         <option value="$PROJECT_DIR$/src/MapReduce/TaskManager.java" />
         <option value="$PROJECT_DIR$/src/MapReduce/Map.java" />
         <option value="$PROJECT_DIR$/src/MapReduce/MapReducer.java" />
         <option value="$PROJECT_DIR$/src/Master/JobHandler.java" />
+        <option value="$PROJECT_DIR$/src/Master/ScheduleManager.java" />
       </list>
     </option>
   </component>
@@ -960,42 +916,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Master/ScheduleManagerInterface.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="225">
-          <caret line="7" column="57" selection-start-line="7" selection-start-column="57" selection-end-line="7" selection-end-column="57" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Master/MRHealthMonitor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="165">
-          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/DFS/DFSFile.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="420">
           <caret line="22" column="22" selection-start-line="22" selection-start-column="15" selection-end-line="22" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/DFS/DFSNameNodeInterface.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="405">
-          <caret line="27" column="23" selection-start-line="27" selection-start-column="23" selection-end-line="27" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/DFS/DFSNameNode.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="6944" max-vertical-offset="7665">
-          <caret line="542" column="18" selection-start-line="542" selection-start-column="18" selection-end-line="542" selection-end-column="18" />
           <folding />
         </state>
       </provider>
@@ -1040,30 +964,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Master/Master.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1290">
-          <caret line="17" column="13" selection-start-line="17" selection-start-column="13" selection-end-line="17" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Master/ScheduleManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="375">
-          <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Master/MapReduceMasterInterface.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="255">
-          <caret line="9" column="37" selection-start-line="9" selection-start-column="37" selection-end-line="9" selection-end-column="37" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/MapReduce/MapReducer.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="496" max-vertical-offset="1485">
@@ -1082,14 +982,70 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/DFS/DFSNameNodeInterface.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="405">
+          <caret line="22" column="23" selection-start-line="22" selection-start-column="23" selection-end-line="22" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/DFS/DFSNameNode.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="1635" max-vertical-offset="7905">
+          <caret line="50" column="38" selection-start-line="50" selection-start-column="4" selection-end-line="50" selection-end-column="38" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Master/ScheduleManagerInterface.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="225">
+          <caret line="7" column="57" selection-start-line="7" selection-start-column="57" selection-end-line="7" selection-end-column="57" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Master/ScheduleManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="375">
+          <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Master/MRHealthMonitor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="165">
+          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Master/MapReduceMasterInterface.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="255">
+          <caret line="9" column="37" selection-start-line="9" selection-start-column="37" selection-end-line="9" selection-end-column="37" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Master/Master.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1290">
+          <caret line="34" column="43" selection-start-line="34" selection-start-column="43" selection-end-line="34" selection-end-column="43" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/Master/JobHandler.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.42915532" vertical-offset="0" max-vertical-offset="765">
-          <caret line="21" column="34" selection-start-line="21" selection-start-column="34" selection-end-line="21" selection-end-column="34" />
+        <state vertical-scroll-proportion="0.4482289" vertical-offset="76" max-vertical-offset="825">
+          <caret line="27" column="4" selection-start-line="27" selection-start-column="4" selection-end-line="27" selection-end-column="4" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#476#477#0" expanded="true" />
-            <element signature="e#508#509#0" expanded="true" />
+            <element signature="e#542#543#0" expanded="true" />
+            <element signature="e#574#575#0" expanded="true" />
           </folding>
         </state>
       </provider>

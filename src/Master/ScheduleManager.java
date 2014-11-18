@@ -13,7 +13,8 @@ public class ScheduleManager implements ScheduleManagerInterface, Runnable{
 
     }
 
-    public void run(){
+    public void run()
+    {
 
     }
 }

@@ -1,11 +1,14 @@
 package Master;
 
 import Config.InternalConfig;
+import DFS.DFSBlock;
 import DFS.DFSNameNode;
 import DFS.DFSNameNodeInterface;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -31,10 +34,11 @@ public class JobHandler {
        scheduler = (ScheduleManagerInterface) registry.lookup("Scheduler");
 
 
+       List<DFSBlock> blocksSet = name_node.getIdBlockMap().get(jobID);
 
-       //for(String file : fileIDs)
+       for(DFSBlock block : blocksSet)
        {
-           /* Find all blocks of file */
+
            /* Try to run map operation for each block */
 
        }
