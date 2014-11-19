@@ -1,10 +1,12 @@
 package MapReduce;
 
 import java.io.BufferedInputStream;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -17,6 +19,8 @@ import DFS.DFSDataNode;
 import DFS.DFSNameNodeInterface;
 import Master.MapReduceMasterInterface;
 import Util.Host;
+import Util.Tuple;
+import org.apache.commons.compress.utils.IOUtils;
 
 /**
  * Created by karansharma on 11/13/14.
@@ -69,10 +73,26 @@ public class MapReducer {
     }
 
     //TODO: Jar file containing MapReduceInterface
-    public void runJob(String JarFileName, File[] files) throws Exception {
-        String jobID = master.createJob(map_reducer_id,JarFileName);
+    public void runJob(MapReducerConfig config, File[] files) throws Exception {
+    	String mapper_name = config.getMapperClass().getName();
+		String reducer_name = config.getMapperClass().getName();
+		/* Example:  */
+		Tuple<String,String> map_tuple = new Tuple<String,String>(mapper_name,mapper_name.replace('.', '/') + ".class");
+		Tuple<String,String> red_tuple = new Tuple<String,String>(reducer_name, reducer_name.replace('.', '/'));
+		
+		Class<?> map_class = config.getMapperClass();
+		String map_name = map_class.getName();
+		String classAsPath_map = map_name.replace('.', '/') + ".class";
+		InputStream stream = map_class.getClassLoader().getResourceAsStream(classAsPath_map);
+		byte[] map_class_byte_array = IOUtils.toByteArray(stream);
+		String reduce_name = map_class.getName();
+		String classAsPath_reduce = map_name.replace('.', '/') + ".class";
+		InputStream stream1 = map_class.getClassLoader().getResourceAsStream(classAsPath_reduce);
+		byte[] reduce_class_byte_array = IOUtils.toByteArray(stream1);
+		
+        String jobID = master.createJob(map_reducer_id,config,map_class_byte_array,reduce_class_byte_array,map_tuple,red_tuple);
         Set<String> file_ids = SendFilesToNameNode(jobID, files);
-        master.startJob(jobID,file_ids);
+        master.startJob(jobID,file_ids,config);
         jobIDs.add(jobID);
     }
 

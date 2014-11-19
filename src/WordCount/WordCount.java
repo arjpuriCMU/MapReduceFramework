@@ -1,7 +1,11 @@
 package WordCount;
 
+import java.io.File;
+
 import MapReduce.MapReduceInterface;
+import MapReduce.MapReducer;
 import MapReduce.MapReducerConfig;
+import Util.Host;
 import Util.Tuple;
 
 /**
@@ -13,9 +17,23 @@ public class WordCount {
 		MapReducerConfig config = new MapReducerConfig();
 		config.setMapperClass(WordCountMap.class);
 		config.setReducerClass(WordCountReduce.class);
-		config.setInputFormat(WordInputFormat.class);
-		config.setOutputFromat(WordOutputFormat.class);
+//		config.setInputFormat(WordInputFormat.class);
+//		config.setOutputFromat(WordOutputFormat.class);
 		config.setInputFile("TropicThunderQuote");
 		config.setOutputFile("WCOutput");
+		File tropicThunder = new File("TropicThunderQuote");
+		File[] files = new File[1];
+		files[0] = tropicThunder;
+		MapReducer map_reducer = null;
+		try {
+			map_reducer = new MapReducer("WordcountClient",new Host("localhost",8080));
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		try {
+			map_reducer.runJob(config, files);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -5,6 +5,10 @@ import java.io.Serializable;
 
 
 public class MapReducerConfig implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4582943943235174948L;
 	private Class<?> mapper_class;
 	private Class<?> reducer_class;
 	private String input_file;
@@ -21,7 +25,7 @@ public class MapReducerConfig implements Serializable {
 	}
 	
 	public void setReducerClass(Class<?> reduce_class){
-		this.reducer_class = reducer_class;
+		this.reducer_class = reduce_class;
 	}
 	
 	public Class<?> getReducerClass(){

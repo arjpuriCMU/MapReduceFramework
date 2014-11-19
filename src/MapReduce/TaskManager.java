@@ -28,6 +28,7 @@ public class TaskManager implements Runnable,TaskManagerInterface{
         mapOutputFiles = new ConcurrentHashMap<>();
         threads = new Thread[cores];
     }
+    
     public void addJob(String jobID, Set<DFSBlock> dfsBlocks, String JarFileName){
         for(DFSBlock dfsBlock : dfsBlocks)
         {

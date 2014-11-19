@@ -11,9 +11,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import Config.ConfigSettings;
 import Config.InternalConfig;
 import DFS.DFSNameNode;
+import MapReduce.MapReducerConfig;
 import Util.Host;
+import Util.Tuple;
 
 public class Master extends UnicastRemoteObject implements MapReduceMasterInterface {
 	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
@@ -25,10 +28,14 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	private ConcurrentHashMap<String,String> slave_id_datanode_id_map;
     private ConcurrentHashMap<String,JobHandler> jobs;
     private ScheduleManager scheduleManager;
+	private ConcurrentHashMap<String,byte[]> map_class_byte_array_map;
+	private ConcurrentHashMap<String,byte[]> reduce_class_byte_array_map;
 	
-
 	public Master(int port) throws RemoteException{
 		slave_ids = new HashSet<String>();
+		map_class_byte_array_map = new ConcurrentHashMap<String,byte[]>();
+		reduce_class_byte_array_map = new ConcurrentHashMap<String,byte[]>();
+		
 		this.port = port;
 		try {
 			InternalConfig.REGISTRY_HOST = InetAddress.getLocalHost().getHostName();
@@ -79,21 +86,32 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	}
 
     /* TODO: figure out how to pass jar file */
-
     /* Creates JobHandler */
-    public String createJob(String participantID,String JarFileName){
-        String jobID = participantID + JarFileName;
+    public String createJob(String participantID,MapReducerConfig config, byte[] map_class_byte_array, 
+    		byte[] reduce_class_byte_array, Tuple<String, String> map_tuple, Tuple<String, String> red_tuple){
+        String jobID = participantID + config;
+        
         while(jobs.containsKey(jobID))
         {
             jobID+= "0";
         }
         JobHandler jobHandler = new JobHandler(jobID);
         jobs.put(jobID,jobHandler);
-        return jobID;
+        /*Ex. WordCount.WordCountMapper -> [WordCount,WordCountMapper] */
+        String[] mapper_name = (map_tuple.getFirst().split("\\."));
+		String[] reducer_name = (red_tuple.getFirst().split("\\."));
+		/* UPLOAD_PATH + WordCountMapper-asdfsa.class */
+		String map_path = ConfigSettings.UPLOAD_PATH + mapper_name[mapper_name.length-1] + "-" + jobID + ".class";
+		String reduce_path = ConfigSettings.UPLOAD_PATH + reducer_name[reducer_name.length-1] + "-" + jobID + ".class";
+		map_class_byte_array_map.put(InternalConfig.generateTaskId(mapper_name[mapper_name.length-1], jobID),map_class_byte_array);
+		reduce_class_byte_array_map.put(InternalConfig.generateTaskId(reducer_name[reducer_name.length-1], jobID), reduce_class_byte_array);
+		return jobID;
     }
 
-    public void startJob(String jobID,Set<String> file_ids) throws Exception{
+    public void startJob(String jobID,Set<String> file_ids, MapReducerConfig config) throws Exception{
         jobs.get(jobID).start(file_ids);
     }
+
+
 	
 }

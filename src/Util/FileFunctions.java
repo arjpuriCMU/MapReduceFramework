@@ -3,6 +3,7 @@ package Util;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,7 +64,21 @@ public class FileFunctions {
         in.close();
         out.close();
     }
+    
+    public static byte[] convertClassToByteArray(File file) throws IOException{
+    	 int _offset=0;
+         int _read=0;
 
+         InputStream fileInputStream = new FileInputStream(file);
+         
+         byte[] byteArray = new byte[(int)file.length()];
+         while (_offset < byteArray.length && (_read=fileInputStream.read(byteArray, _offset, byteArray.length-_offset)) >= 0)
+             _offset += _read;    
+
+         fileInputStream.close();
+         
+         return byteArray;
+    }
 
     /*
         TODO: Write function to be able to get key and value (stored as strings)
