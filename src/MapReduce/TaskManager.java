@@ -4,9 +4,14 @@ import DFS.DFSBlock;
 import Util.Tuple;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by karansharma on 11/17/14.
@@ -15,52 +20,70 @@ public class TaskManager implements Runnable,TaskManagerInterface{
 
     public String dataNodeID;
     public int cores;
-    public LinkedList<Tuple<String,DFSBlock>> taskList;
+    public int load;
     public ConcurrentHashMap<String, Integer> mapsLeft;
-    public ConcurrentHashMap<String,Set<File>> mapOutputFiles;
-    public Thread[] threads;
+    public ConcurrentHashMap<String,HashSet<String>> mapOutputFiles;
+    public ConcurrentHashMap<String,Mapper> mappers;
+    public ConcurrentHashMap<String,Reducer> reducers;
+    ExecutorService threadPool;
 
     public TaskManager(String dataNodeID, int cores){
         this.dataNodeID = dataNodeID;
         this.cores = cores;
-        taskList = new LinkedList<>();
         mapsLeft = new ConcurrentHashMap<String,Integer>();
         mapOutputFiles = new ConcurrentHashMap<>();
-        threads = new Thread[cores];
+        mappers = new ConcurrentHashMap<>();
+        reducers = new ConcurrentHashMap<>();
+        threadPool = Executors.newFixedThreadPool(cores);
+
+
     }
-    
-    public void addJob(String jobID, Set<DFSBlock> dfsBlocks, String JarFileName){
+
+    public void addJob(String jobID, Set<DFSBlock> dfsBlocks, Class mapperClass, Class reducerClass)
+    {
+        /* TODO: Get Mapper and Reducer Classes */
+        Mapper mapper = null;
+        Reducer reducer = null;
+        try {
+            mapper = (Mapper) mapperClass.newInstance();
+            reducer = (Reducer) reducerClass.newInstance();
+            mappers.put(jobID,(Mapper) mapperClass.newInstance());
+            reducers.put(jobID,(Reducer) reducerClass.newInstance());
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
         for(DFSBlock dfsBlock : dfsBlocks)
         {
-            taskList.add(new Tuple(jobID, dfsBlock));
+            load++;
+            threadPool.submit(new MapExecuter(this,jobID,mapper,dfsBlock.getHostBlockPath(dataNodeID)));
         }
         mapsLeft.put(jobID,dfsBlocks.size());
     }
 
-    public void run(){
-        for(int i = 0; i < cores; i++)
+    public void run(){}
+
+    public void checkReduce(String jobID, String outFileName)
+    {
+        //TODO: lock around load
+        load--;
+        mapsLeft.put(jobID,mapsLeft.get(jobID) - 1);
+        HashSet outFiles =  mapOutputFiles.get(jobID);
+        outFiles.add(outFileName);
+        mapOutputFiles.put(jobID,outFiles);
+
+        /* If last map was executed, execute reduce */
+        if (mapsLeft.get(jobID) == 0)
         {
-            if(taskList.size() > 0)
-            {
-                Tuple<String,DFSBlock> task = taskList.removeFirst();
-
-            }
-
+            ReduceExecuter reduceExecuter =
+                    new ReduceExecuter(this,jobID, reducers.get(jobID), outFiles);
+            reduceExecuter.run();
         }
-
     }
 
-    public void launchThread(int index){
-        if(taskList.size() > 0)
-        {
-            Tuple<String,DFSBlock> task = taskList.removeFirst();
-
-        }
-        return;
-
-    }
-
-    public int taskLoad(){return taskList.size();}
+    public int taskLoad(){return load;}
 
     public String getDataNodeID(){return dataNodeID;}
 }

@@ -9,8 +9,7 @@ import java.util.Set;
  * Created by karansharma on 11/18/14.
  */
 public interface TaskManagerInterface extends Remote {
-    public void addJob(String jobID, Set<DFSBlock> dfsBlocks, String JarFileName);
-    public void launchThread(int index);
+    public void addJob(String jobID, Set<DFSBlock> dfsBlocks, Class mapperClass, Class reducerClass);
     public int taskLoad();
     public String getDataNodeID();
 }
