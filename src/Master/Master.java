@@ -28,11 +28,13 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	private ConcurrentHashMap<String,String> slave_id_datanode_id_map;
     private ConcurrentHashMap<String,JobHandler> jobs;
     private ScheduleManager scheduleManager;
-	private ConcurrentHashMap<String,Tuple<byte[],byte[]>> mapred_class_byte_array_map;
+	private ConcurrentHashMap<String,Tuple<byte[],byte[]>> jobId_class_byte_array_map;
+	private ConcurrentHashMap<String,Tuple<String,String>> jobId_mapname_map;
 	
 	public Master(int port) throws RemoteException{
 		slave_ids = new HashSet<String>();
-		mapred_class_byte_array_map = new ConcurrentHashMap<String,Tuple<byte[],byte[]>>();
+		jobId_class_byte_array_map = new ConcurrentHashMap<String,Tuple<byte[],byte[]>>();
+		this.jobId_mapname_map = new ConcurrentHashMap<String,Tuple<String,String>>();
 		this.port = port;
 		try {
 			InternalConfig.REGISTRY_HOST = InetAddress.getLocalHost().getHostName();
@@ -72,6 +74,14 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	public void setName_node_host(Host name_node_host) {
 		this.name_node_host = name_node_host;
 	}
+	
+	public ConcurrentHashMap<String,Tuple<byte[],byte[]>> getClassMap(){
+		return this.jobId_class_byte_array_map;
+	}
+	
+	public ConcurrentHashMap<String,Tuple<String,String>> getClassNameMap(){
+		return this.jobId_mapname_map;
+	}
 
 	@Override
 	public void handshakeWithSlave(String participantID,String slave_id)
@@ -98,7 +108,8 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		/* UPLOAD_PATH + WordCountMapper-asdfsa.class */
 		String map_path = ConfigSettings.UPLOAD_PATH + mapper_name[mapper_name.length-1] + "-" + jobID + ".class";
 		String reduce_path = ConfigSettings.UPLOAD_PATH + reducer_name[reducer_name.length-1] + "-" + jobID + ".class";
-		mapred_class_byte_array_map.put(jobID,new Tuple<byte[],byte[]>(map_class_byte_array,reduce_class_byte_array));
+		jobId_class_byte_array_map.put(jobID,new Tuple<byte[],byte[]>(map_class_byte_array,reduce_class_byte_array));
+		this.jobId_mapname_map.put(jobID, new Tuple<String,String>(mapper_name[mapper_name.length-1],reducer_name[reducer_name.length-1]));
 		return jobID;
     }
 

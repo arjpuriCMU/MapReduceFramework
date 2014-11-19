@@ -10,16 +10,17 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Set;
 
 /**
  * Created by karansharma on 11/17/14.
  */
-public class ScheduleManager implements ScheduleManagerInterface, Runnable{
+public class ScheduleManager extends UnicastRemoteObject implements ScheduleManagerInterface, Runnable{
 
     //Queue<DFSBlock>
     Registry registry;
-    public ScheduleManager()
+    public ScheduleManager() throws RemoteException
     {
         try {
             registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
@@ -34,7 +35,7 @@ public class ScheduleManager implements ScheduleManagerInterface, Runnable{
     }
 
     /* Returns hostName of replica to map to */
-    public String selectReplica(String jobID, DFSBlock block){
+    public String selectReplica(String jobID, DFSBlock block) throws RemoteException{
         Set<Host> replicaHosts = block.getBlockHosts();
         int minLoad = -1;
         String minHostName = "";
