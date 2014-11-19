@@ -58,8 +58,11 @@ public class MapReducer {
         String data_node_id = InternalConfig.generateDataNodeId(participantID);
         data_node = new DFSDataNode(data_node_id, inet, master_host.port);
         data_node.start();
+
+        /* Construct and Start local Task Manager and bind it to registry */
         task_manager = new TaskManager(data_node_id,Runtime.getRuntime().availableProcessors());
         (new Thread(task_manager)).start();
+        registry.bind(InternalConfig.generateTaskManagerId(InetAddress.getLocalHost().getHostName()),task_manager);
 
         /* Establishes connection to master */
     	master.handshakeWithSlave(participantID,data_node_id);
