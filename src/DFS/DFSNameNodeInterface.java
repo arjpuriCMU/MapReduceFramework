@@ -27,5 +27,6 @@ public interface DFSNameNodeInterface extends Remote {
 	public void bindFileFromByteArray(String string, byte[] byte_array, String job_id, String mapreducer_id) throws RemoteException;
 	public Set<String> flushFilesToDataNodes(String map_reducer_id) throws RemoteException;
     public ConcurrentHashMap<String,Set<DFSBlock>> getFileIDBlockMap() throws RemoteException;
+	public boolean fileExists(String input_file) throws RemoteException;
 
 }

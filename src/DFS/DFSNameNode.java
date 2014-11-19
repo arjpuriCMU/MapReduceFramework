@@ -59,6 +59,8 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	//Add the connection between job and files
 	//Store replicas and where there and how many left.
 	//TODO Map jobIds to particular file
+	//TODO FileExists function
+	//TODO Allow users to put files on DFS
 	
 	public DFSNameNode(int port) throws RemoteException{
 		node_ids = new HashSet<String>();
@@ -76,7 +78,6 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	public Set<String> getNodeIds(){
 		return this.node_ids;
 	}
-	
 	
 	public ConcurrentHashMap<String,Set<DFSBlock>> getFileIDBlockMap(){
 		return fileID_block_map;
@@ -559,6 +560,12 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	private void delete_buffer_files(String map_reducer_id) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public boolean fileExists(String input_file) throws RemoteException {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 

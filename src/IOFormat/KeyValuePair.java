@@ -1,4 +1,4 @@
-package MapReduce;
+package IOFormat;
 
 import java.io.Serializable;
 
