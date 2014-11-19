@@ -13,5 +13,6 @@ public class InternalConfig {
 	public static String generateDataNodeId(String slave_id){
 		return slave_id + "datanode";
 	}
+    public static String generateTaskManagerId(String hostname) {return hostname + "taskmanager";}
 	
 }

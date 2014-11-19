@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by karansharma on 11/17/14.
  */
-public class TaskManager implements Runnable{
+public class TaskManager implements Runnable,TaskManagerInterface{
 
     public String dataNodeID;
     public int cores;
@@ -58,4 +58,8 @@ public class TaskManager implements Runnable{
         return;
 
     }
+
+    public int taskLoad(){return taskList.size();}
+
+    public String getDataNodeID(){return dataNodeID;}
 }
