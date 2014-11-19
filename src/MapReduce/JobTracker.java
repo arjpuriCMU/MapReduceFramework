@@ -74,7 +74,7 @@ public class JobTracker extends UnicastRemoteObject implements JobTrackerInterfa
 		String map_path = ConfigSettings.UPLOAD_PATH + mapper_name[mapper_name.length-1] + "-" + curr_job_id + ".class";
 		String reduce_path = ConfigSettings.UPLOAD_PATH + reducer_name[reducer_name.length-1] + "-" + curr_job_id + ".class";
 		
-		FileFunctions
+		FileFunctions.transferBinary(map_tuple.getSecond().getBytes(),map_path);
 		
 		
 	}
