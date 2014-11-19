@@ -16,6 +16,5 @@ public class InternalConfig {
 	}
     public static String generateTaskManagerId(String hostname) {return hostname + "taskmanager";}
     
-    public static String generateTaskId(String task_name, String job_id){ return task_name + "-" + job_id;}
 	
 }

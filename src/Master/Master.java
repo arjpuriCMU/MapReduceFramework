@@ -28,14 +28,11 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	private ConcurrentHashMap<String,String> slave_id_datanode_id_map;
     private ConcurrentHashMap<String,JobHandler> jobs;
     private ScheduleManager scheduleManager;
-	private ConcurrentHashMap<String,byte[]> map_class_byte_array_map;
-	private ConcurrentHashMap<String,byte[]> reduce_class_byte_array_map;
+	private ConcurrentHashMap<String,Tuple<byte[],byte[]>> mapred_class_byte_array_map;
 	
 	public Master(int port) throws RemoteException{
 		slave_ids = new HashSet<String>();
-		map_class_byte_array_map = new ConcurrentHashMap<String,byte[]>();
-		reduce_class_byte_array_map = new ConcurrentHashMap<String,byte[]>();
-		
+		mapred_class_byte_array_map = new ConcurrentHashMap<String,Tuple<byte[],byte[]>>();
 		this.port = port;
 		try {
 			InternalConfig.REGISTRY_HOST = InetAddress.getLocalHost().getHostName();
@@ -45,7 +42,6 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		System.out.println("NameNode being initiated.");
 		name_node = new DFSNameNode(port);
 		name_node.start();
-
 		try {
 			main_registry = LocateRegistry.createRegistry(REGISTRY_PORT);
 			main_registry.bind(InternalConfig.MAP_REDUCE_MASTER_ID, this);
@@ -57,7 +53,6 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		name_node.initRegistry();
 		setName_node_host(new Host(name_node.getHost().getHostName(),port));
 		slave_id_datanode_id_map = new ConcurrentHashMap<String,String>();
-
         /* Start Schedule Manager and put it in registry*/
         scheduleManager = new ScheduleManager();
         Thread schedulerThread = new Thread(scheduleManager);
@@ -103,8 +98,7 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		/* UPLOAD_PATH + WordCountMapper-asdfsa.class */
 		String map_path = ConfigSettings.UPLOAD_PATH + mapper_name[mapper_name.length-1] + "-" + jobID + ".class";
 		String reduce_path = ConfigSettings.UPLOAD_PATH + reducer_name[reducer_name.length-1] + "-" + jobID + ".class";
-		map_class_byte_array_map.put(InternalConfig.generateTaskId(mapper_name[mapper_name.length-1], jobID),map_class_byte_array);
-		reduce_class_byte_array_map.put(InternalConfig.generateTaskId(reducer_name[reducer_name.length-1], jobID), reduce_class_byte_array);
+		mapred_class_byte_array_map.put(jobID,new Tuple<byte[],byte[]>(map_class_byte_array,reduce_class_byte_array));
 		return jobID;
     }
 
