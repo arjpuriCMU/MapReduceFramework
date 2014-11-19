@@ -1,6 +1,7 @@
 package Util;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -10,6 +11,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class FileFunctions {
+	
+	private static final int COPY_BUF_SIZE = 8024;
+
 
 	public static void createDirectory(String direc){
 		File dir = new File(direc);
@@ -78,6 +82,27 @@ public class FileFunctions {
          fileInputStream.close();
          
          return byteArray;
+    }
+    
+    public static long copy(final InputStream input, final OutputStream output) throws IOException {
+        return copy(input, output, COPY_BUF_SIZE);
+    }
+    
+    public static long copy(final InputStream input, final OutputStream output, int buffersize) throws IOException {
+        final byte[] buffer = new byte[buffersize];
+        int n = 0;
+        long count=0;
+        while (-1 != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+            count += n;
+        }
+        return count;
+    }
+    
+    public static byte[] toByteArray(final InputStream input) throws IOException {
+        final ByteArrayOutputStream output = new ByteArrayOutputStream();
+        copy(input, output);
+        return output.toByteArray();
     }
 
     /*

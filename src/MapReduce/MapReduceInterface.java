@@ -8,6 +8,7 @@ import Util.Tuple;
 public interface MapReduceInterface {
     String Map(String record);
     Tuple<String,String> Reduce(Tuple<String,String> pair1, Tuple<String,String> pair2);
+    
 
 
 }

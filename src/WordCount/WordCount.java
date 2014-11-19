@@ -13,7 +13,7 @@ import Util.Tuple;
  */
 public class WordCount {
 
-	public static void main(String args[]){
+	public static void main(String[] args){
 		MapReducerConfig config = new MapReducerConfig();
 		config.setMapperClass(WordCountMap.class);
 		config.setReducerClass(WordCountReduce.class);

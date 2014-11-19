@@ -27,7 +27,11 @@ import java.util.concurrent.Future;
  */
 public class TaskManager extends UnicastRemoteObject implements Runnable,TaskManagerInterface{
 
-    public String dataNodeID;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	public String dataNodeID;
     public int cores;
     public int load;
     public ConcurrentHashMap<String, Integer> mapsLeft;
@@ -90,7 +94,7 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         //TODO: lock around load
         load--;
         mapsLeft.put(jobID,mapsLeft.get(jobID) - 1);
-        HashSet outFiles =  mapOutputFiles.get(jobID);
+        HashSet<String> outFiles =  mapOutputFiles.get(jobID);
         outFiles.add(outFileName);
         mapOutputFiles.put(jobID,outFiles);
 

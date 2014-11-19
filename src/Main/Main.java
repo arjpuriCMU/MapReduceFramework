@@ -4,18 +4,16 @@ import java.net.InetAddress;
 
 import DFS.DFSDataNode;
 import DFS.DFSNameNode;
+import Master.Master;
 
 
 public class Main {
 	public static void main(String[] args) throws IOException, ClassNotFoundException{
-		DFSNameNode master = null;
-		if (args.length == 2){
-			if (args[0].toLowerCase().equals("-n")) {
-				System.out.println("NameNode being initiated.");
-				int input_port = Integer.parseInt(args[1]);
-				master = new DFSNameNode(input_port);
-				master.start();
-			}
+		Master master = null;
+		if (args.length == 1){
+			int input_port = Integer.parseInt(args[0]);
+			master = new Master(input_port);
+			master.start();
 		}
 		else if (args.length == 4){
 			if (args[0].toLowerCase().equals("-d")){

@@ -20,18 +20,15 @@ CLASSES = \
 	DFS/DFSHealthMonitor.java \
 	DFS/DFSNameNode.java \
 	Main/Main.java \
-	
 	IOFormat/KeyValuePair.java \
 	IOFormat/MapperCollector.java \
 	IOFormat/ReducerCollector.java \
-	
 	Messages/Handshake.java \
 	Messages/Heartbeat.java \
 	Messages/Message.java \
 	MapReduce/MapReduceInterface.java \
 	MapReduce/MapReducer.java \
 	MapReduce/Map.java \
-	
 	MapReduce/MapExecutor.java \
 	MapReduce/Mapper.java \
 	MapReduce/MapReducerConfig.java \
@@ -39,15 +36,12 @@ CLASSES = \
 	MapReduce/Reducer.java \
 	MapReduce/TaskManager.java \
 	MapReduce/TaskManagerInterface.java \
-	
 	Master/Master.java \
 	Master/JobHandler.java \
 	Master/MapReduceMasterInterface.java \
 	Master/ScheduleManager.java \
 	Master/ScheduleManagerInterface.java \
-	
-	Util/JavaCustomClassLoader.java
-	
+	Util/JavaCustomClassLoader.java \
 	Util/FileFunctions.java \
 	Util/Host.java \
 	Util/Tuple.java \
