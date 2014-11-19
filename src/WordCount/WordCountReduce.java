@@ -10,7 +10,7 @@ public class WordCountReduce implements Reducer{
 	@Override
 	public void reduce(String key, ArrayList<String> value,
 			ReducerCollector reducerCollector) {
-		
+		reducerCollector.addOutput(key, value.size());
 	}
 
 }

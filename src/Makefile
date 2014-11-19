@@ -20,16 +20,34 @@ CLASSES = \
 	DFS/DFSHealthMonitor.java \
 	DFS/DFSNameNode.java \
 	Main/Main.java \
-	Master/Master.java \
+	
+	IOFormat/KeyValuePair.java \
+	IOFormat/MapperCollector.java \
+	IOFormat/ReducerCollector.java \
+	
 	Messages/Handshake.java \
 	Messages/Heartbeat.java \
 	Messages/Message.java \
 	MapReduce/MapReduceInterface.java \
 	MapReduce/MapReducer.java \
+	MapReduce/Map.java \
+	
+	MapReduce/MapExecutor.java \
+	MapReduce/Mapper.java \
+	MapReduce/MapReducerConfig.java \
+	MapReduce/ReducerExecuter.java \
+	MapReduce/Reducer.java \
+	MapReduce/TaskManager.java \
+	MapReduce/TaskManagerInterface.java \
+	
+	Master/Master.java \
 	Master/JobHandler.java \
 	Master/MapReduceMasterInterface.java \
 	Master/ScheduleManager.java \
 	Master/ScheduleManagerInterface.java \
+	
+	Util/JavaCustomClassLoader.java
+	
 	Util/FileFunctions.java \
 	Util/Host.java \
 	Util/Tuple.java \
@@ -49,8 +67,19 @@ RMCLASSES = \
 	DFS/DFSFile.class \
 	DFS/DFSHealthMonitor.class \
 	DFS/DFSNameNode.class \
+	IOFormat/KeyValuePair.class \
+	IOFormat/MapperCollector.class \
+	IOFormat/ReducerCollector.class \
+	MapReduce/Map.class \
 	MapReduce/MapReduceInterface.class \
 	MapReduce/MapReducer.class \
+	MapReduce/MapExecutor.class \
+	MapReduce/Mapper.class \
+	MapReduce/MapReducerConfig.class \
+	MapReduce/ReducerExecuter.class \
+	MapReduce/Reducer.class \
+	MapReduce/TaskManager.class \
+	MapReduce/TaskManagerInterface.class \
 	Main/Main.class \
 	Master/Master.class \
 	Master/MapReduceMasterInterface.class \
@@ -59,11 +88,10 @@ RMCLASSES = \
 	Messages/Handshake.class \
 	Messages/Heartbeat.class \
 	Messages/Message.class \
-	MapReduce/MapReduceInterface.class \
-	MapReduce/MapReducer.class \
 	Util/FileFunctions.class \
 	Util/Host.class \
 	Util/Tuple.class \
+	Util/JavaCustomClassLoader.class \
 
 
 default: classes

@@ -67,7 +67,7 @@ public class JobHandler {
        {
            TaskManagerInterface taskManagerInterface =
                    (TaskManagerInterface) registry.lookup(InternalConfig.generateTaskManagerId(host));
-           taskManagerInterface.addJob(jobID,partitions.get(host), JarFile);
+           taskManagerInterface.addJob(jobID,partitions.get(host));
        }
    }
 
