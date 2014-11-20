@@ -99,7 +99,6 @@ public class DFSConnectionManager extends UnicastRemoteObject implements Runnabl
                     health_monitor.addNode(handshake_msg.getNodeId());
                     System.out.println("DataNode Id: " + handshake_msg.getNodeId() + " has started..");
                 }
-                System.out.print("NameNode -> ");
                 data_node_socket.close();
                 input_stream.close();
 

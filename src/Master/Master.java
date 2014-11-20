@@ -30,6 +30,10 @@ import Util.Host;
 import Util.Tuple;
 
 public class Master extends UnicastRemoteObject implements MapReduceMasterInterface {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
 	private int port;
 	private Host name_node_host;
@@ -53,8 +57,6 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 			e1.printStackTrace();
 		}
 		System.out.println("NameNode being initiated.");
-		name_node = new DFSNameNode(port);
-		name_node.start();
 		try {
 			main_registry = LocateRegistry.createRegistry(REGISTRY_PORT);
 			main_registry.bind(InternalConfig.MAP_REDUCE_MASTER_ID, this);
@@ -63,6 +65,8 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		} catch (AlreadyBoundException e) {
 			e.printStackTrace();
 		} 
+		name_node = new DFSNameNode(port);
+		name_node.start();
 		name_node.initRegistry();
 		setName_node_host(new Host(name_node.getHost().getHostName(),port));
 		slave_id_datanode_id_map = new ConcurrentHashMap<String,String>();
@@ -97,6 +101,7 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	@Override
 	public void handshakeWithSlave(String participantID,String slave_id)
 			throws RemoteException {
+		System.out.println(slave_id + " added to master");
 		slave_ids.add(participantID);
 		slave_id_datanode_id_map.put(participantID, slave_id);
 	}
@@ -124,21 +129,23 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		return jobID;
     }
 
-    public void startJob(String jobID,Set<String> file_ids, MapReducerConfig config) throws Exception{
-        jobs.get(jobID).start(file_ids);
+    public void startJob(String jobID,Set<String> file_ids, MapReducerConfig config){
+        try {
+			jobs.get(jobID).start(file_ids);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
     
 	public void start(){
 		System.out.println("Starting Master...");
-
 		Scanner scanner = new Scanner(System.in);
 		String usrInput;
 		String[] args;
-
         /* TODO: NameNode launched from Master in foreground so may infinite loop */
         /* Command Line Shell for NameNode */
 		while(true){
-			System.out.print("NameNode -> ");
+			System.out.print("Master -> ");
 			usrInput = scanner.nextLine();
 			args = usrInput.split(" ");
 
@@ -163,7 +170,6 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		}
 
         /* Distributes Files */
-	
 		else if (args[0].toLowerCase().equals("datanode_health?")){
 
 		}

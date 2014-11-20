@@ -209,42 +209,42 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		Thread connection_thread = new Thread(connection_manager);
 		connection_thread.start();
 
-		Scanner scanner = new Scanner(System.in);
-		String usrInput;
-		String[] args;
+//		Scanner scanner = new Scanner(System.in);
+//		String usrInput;
+//		String[] args;
 
         /* TODO: NameNode launched from Master in foreground so may infinite loop */
         /* Command Line Shell for NameNode */
-		while(true){
-			System.out.print("NameNode -> ");
-			usrInput = scanner.nextLine();
-			args = usrInput.split(" ");
-
-            /* If user quits nameNode */
-			if (args[0].toLowerCase().equals("quit")){
-				try {
-					ConnectionManagerInterface c_manager = (ConnectionManagerInterface) this.main_registry.lookup(InternalConfig.CONNECTION_MANAGER_ID);
-					c_manager.setActive(false);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				
-				closeDataNodes();
-				FileFunctions.deleteDirectory(new File(InternalConfig.DFS_STORAGE_PATH));
-				try {
-					this.server_socket.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				System.exit(0);
-			}
-
-
-			processCLInput(args);
-			if (args[0].toLowerCase().equals("help" )){
-				displayHelp();
-			}
-		}
+//		while(true){
+//			System.out.print("NameNode -> ");
+//			usrInput = scanner.nextLine();
+//			args = usrInput.split(" ");
+//
+//            /* If user quits nameNode */
+//			if (args[0].toLowerCase().equals("quit")){
+//				try {
+//					ConnectionManagerInterface c_manager = (ConnectionManagerInterface) this.main_registry.lookup(InternalConfig.CONNECTION_MANAGER_ID);
+//					c_manager.setActive(false);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//				
+//				closeDataNodes();
+//				FileFunctions.deleteDirectory(new File(InternalConfig.DFS_STORAGE_PATH));
+//				try {
+//					this.server_socket.close();
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//				System.exit(0);
+//			}
+//
+//
+//			processCLInput(args);
+//			if (args[0].toLowerCase().equals("help" )){
+//				displayHelp();
+//			}
+//		}
 	}
 	
 	private void closeDataNodes() {
