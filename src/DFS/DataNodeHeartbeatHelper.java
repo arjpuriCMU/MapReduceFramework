@@ -1,5 +1,7 @@
 package DFS;
 
+import java.rmi.AccessException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -8,6 +10,8 @@ import java.rmi.server.UnicastRemoteObject;
 
 import Config.ConfigSettings;
 import Config.InternalConfig;
+import Master.MapReduceMasterInterface;
+import Util.Tuple;
 
 public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runnable, HeartbeatHelperInterface {
 	/**
@@ -35,14 +39,18 @@ public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runn
 	}
 	
 	private void initOnRegistry() {
-		System.out.println(port + ", " + id + ", " + host);
+		Registry name_node_registry = null;
 		try {
-			Registry registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST,REGISTRY_PORT);
-			registry.rebind(id, this);	
-		} catch (RemoteException e) {
+			name_node_registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST,REGISTRY_PORT);
+			DFSNameNodeInterface name_node = (DFSNameNodeInterface) name_node_registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
+			Tuple<String,Integer> data_node_registry_info = name_node.getDataNodeRegistryInfo().get(node_id);
+			Registry data_node_registry = LocateRegistry.getRegistry(data_node_registry_info.getFirst(), data_node_registry_info.getSecond());
+			data_node_registry.bind(id, this);
+		} catch (RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		} catch (AlreadyBoundException e) {
 			e.printStackTrace();
 		} 
-			
 	}
 
 	public void setActive(boolean bool){

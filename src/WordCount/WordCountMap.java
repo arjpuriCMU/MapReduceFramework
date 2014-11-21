@@ -12,5 +12,9 @@ public class WordCountMap implements Mapper {
 		int temp_value = 1;
 		mapperOutputCollector.addOutput(temp_key, temp_value);
 	}
+	
+	public void sex(){
+		System.out.println("sexysexy");
+	}
 
 }

@@ -2,12 +2,17 @@ package MapReduce;
 
 import Config.InternalConfig;
 import DFS.DFSBlock;
+import DFS.DFSDataNode;
+import DFS.DataNodeInterface;
 import Master.MapReduceMasterInterface;
 import Master.Master;
 import Util.JavaCustomClassLoader;
 import Util.Tuple;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -41,6 +46,7 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
     public Registry registry;
     ExecutorService threadPool;
     public MapReduceMasterInterface master;
+    private DataNodeInterface data_node;
 
     public TaskManager(String dataNodeID, int cores) throws RemoteException{
         this.dataNodeID = dataNodeID;
@@ -51,6 +57,18 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         reducers = new ConcurrentHashMap<>();
         threadPool = Executors.newFixedThreadPool(cores);
         registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST,InternalConfig.REGISTRY_PORT);
+        try {
+			data_node = (DataNodeInterface) registry.lookup(dataNodeID);
+		} catch (NotBoundException e2) {
+			e2.printStackTrace();
+		}
+        try {
+        	MapReduceMasterInterface master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
+			master.proxyBind(InternalConfig.generateTaskManagerId(data_node.getHostName()), this);
+//			registry.bind(InternalConfig.generateTaskManagerId(data_node.getHostName()),this);
+		} catch (NotBoundException e1) {
+			e1.printStackTrace();
+		}
         try {
 			master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
 		} catch (NotBoundException e) {
@@ -63,16 +81,17 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
     	
         /*Get Mapper and Reducer Classes */
     	JavaCustomClassLoader map_loader = new JavaCustomClassLoader(master.getClassMap().get(jobID).getFirst());
-    	Class<?> mapper_class = map_loader.findClass(master.getClassNameMap().get(jobID).getFirst());
-//    	mapper.cast(Mapper.class);
+    	Class<?> mapper_class =
+    			map_loader.findClass(master.getClassNameMap().get(jobID).getFirst());
     	JavaCustomClassLoader reduce_loader = new JavaCustomClassLoader(master.getClassMap().get(jobID).getSecond());
     	Class<?> reducer_class = reduce_loader.findClass(master.getClassNameMap().get(jobID).getSecond());
-//    	reducer.cast(Reducer.class);
     	Mapper mapper = null;
     	Reducer reducer = null;
         try {
             mapper =  (Mapper) mapper_class.newInstance();
             reducer = (Reducer) reducer_class.newInstance();
+            mapper.sex(); /* testing only dont judge */
+            reducer.poop();
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {

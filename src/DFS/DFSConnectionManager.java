@@ -3,6 +3,7 @@ package DFS;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -84,14 +85,11 @@ public class DFSConnectionManager extends UnicastRemoteObject implements Runnabl
                     /* Store dataNode information on nameNode */
                     master_name_node.node_ids.add(handshake_msg.getNodeId());
                     master_name_node.getIdHostMap().put(handshake_msg.getNodeId()
-                            , new Host(data_node_socket.getInetAddress().getHostName()
+                            , new Host(handshake_msg.getDataNodeHost()
                             , data_node_socket.getPort()));
-
-
                     i++;
                     Registry registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST
                             , REGISTRY_PORT);
-
                     //Stores node as active
                     master_name_node.getIdActiveMap().put(handshake_msg.getNodeId(), true);
 
@@ -102,7 +100,10 @@ public class DFSConnectionManager extends UnicastRemoteObject implements Runnabl
                 data_node_socket.close();
                 input_stream.close();
 
-            } catch (Exception e) {
+            }catch (SocketException e){
+            	
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
 

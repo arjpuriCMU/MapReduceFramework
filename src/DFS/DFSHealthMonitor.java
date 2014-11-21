@@ -62,7 +62,12 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 	
 	@Override
 	public void changeHeartbeat(String node_id, Integer val) throws RemoteException{
+		try{
 			node_health_map.put(node_id, node_health_map.get(node_id)+val);
+		}
+		catch (NullPointerException e) {
+			
+		}
 	}
 	
 	@Override
@@ -114,6 +119,7 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 			for (int i = 0; i < dead_node_ids.size(); i++){
 				name_node.changeActiveStatus(dead_node_ids.get(i));
 				node_ids.remove(dead_node_ids.get(i));
+				name_node.getDataNodeRegistryInfo().remove(dead_node_ids.get(i));
 				name_node.moveBlocksFromInactive();
 			}
 		} catch (RemoteException e) {

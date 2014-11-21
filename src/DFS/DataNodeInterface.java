@@ -17,4 +17,5 @@ public interface DataNodeInterface extends Remote {
 	public HashMap<String,List<DFSBlock>> getFileBlockReplicaMap() throws RemoteException;
 	public void exitDataNode() throws RemoteException;
 	public String getNodeId() throws RemoteException;
+	public String getHostName() throws RemoteException;
 }

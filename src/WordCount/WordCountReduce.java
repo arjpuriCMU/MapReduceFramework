@@ -12,5 +12,8 @@ public class WordCountReduce implements Reducer{
 			ReducerCollector reducerCollector) {
 		reducerCollector.addOutput(key, value.size());
 	}
+	public void poop() {
+		System.out.println("poop");
+	}
 
 }

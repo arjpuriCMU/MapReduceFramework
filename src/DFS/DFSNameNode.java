@@ -55,6 +55,9 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
 	public HashMap<Tuple<String,Integer>,byte[]> fileID_block_file_map;
 	public ConcurrentHashMap<String,List<DFSFile>> slave_dfsfile_buffer; //before partitioning and sending out the files
+	public ConcurrentHashMap<String, byte[]> fileID_byte_arr; /*Stores the fileId to the byte array corresponding to that file */
+	private ConcurrentHashMap<String,Tuple<String,Integer>> data_nodeID_registry_info_map; /*maps data node id to its registry info */
+	private int temp_free_port = InternalConfig.REGISTRY_PORT+1;
 	/*TO DO*/
 	//Add the connection between job and files
 	//Store replicas and where there and how many left.
@@ -72,11 +75,29 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		fileID_block_file_map = new HashMap<Tuple<String,Integer>,byte[]>(); 
 		slave_dfsfile_buffer = new ConcurrentHashMap<String,List<DFSFile>>();
 		fileID_block_map = new ConcurrentHashMap<String,Set<DFSBlock>>();
+		fileID_byte_arr = new ConcurrentHashMap<String, byte[]>();
+		data_nodeID_registry_info_map = new ConcurrentHashMap<String, Tuple<String,Integer>>();
 		this.port = port;
 	}
 	
 	public Set<String> getNodeIds(){
 		return this.node_ids;
+	}
+	
+	/*Gets a free port for the data node to bind to */
+	public int getFreeRegistryPort(){
+		this.temp_free_port ++;
+		return this.temp_free_port;
+	}
+	
+	public ConcurrentHashMap<String,Tuple<String,Integer>> getDataNodeRegistryInfo(){
+		return this.data_nodeID_registry_info_map;
+	}
+	
+	public void addDataNodeRegistryInfo(String data_nodeId,
+			Tuple<String, Integer> tuple) throws RemoteException{
+		this.data_nodeID_registry_info_map.put(data_nodeId, tuple);
+		
 	}
 	
 	public ConcurrentHashMap<String,Set<DFSBlock>> getFileIDBlockMap(){
@@ -185,6 +206,24 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	
 	public ConcurrentHashMap<String, List<DFSBlock>> getIdBlockMap(){
 		return this.nodeId_block_map;
+	}
+	
+	public void quit(){
+		try {
+			ConnectionManagerInterface c_manager = (ConnectionManagerInterface) this.main_registry.lookup(InternalConfig.CONNECTION_MANAGER_ID);
+			c_manager.setActive(false);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		closeDataNodes();
+		FileFunctions.deleteDirectory(new File(InternalConfig.DFS_STORAGE_PATH));
+		try {
+			this.server_socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.exit(0);
 	}
 
 	@SuppressWarnings("resource")
@@ -356,15 +395,16 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			 */
 			int line_count = FileFunctions.countLines(file.getFile().getName());
 			int line_length = (int) (file.getFile().length()/line_count);
-			byte[] byte_array = new byte[line_length*SPLIT_SIZE];
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			
+			byte[] byte_array; //= new byte[line_length*SPLIT_SIZE];
+			ByteArrayOutputStream bos = new ByteArrayOutputStream(line_length*SPLIT_SIZE);
+			byte[] file_byte_array = this.fileID_byte_arr.get(file.getDFSFile_id());
 			try {
 				br = new BufferedReader(new FileReader(file.getFile()));
-				while ((line = br.readLine()) != null){ //loop through all lines
+				while ((line = br.readLine()) != null){ //loop through all bytes in corresponding byte array
 					if (line_no % SPLIT_SIZE == 0 && line_no != 0){  //when we need to split
 						block_hosts = new HashSet<Host>();
 						file.getBlockIDMap().put(block_no, file_block);
+						byte_array = bos.toByteArray();
 						for (int j = 0; j < replication_factor; j++){//to distribute replicas
 							String node_id = data_node_queue.removeFirst();//next datablock in queue. this ensures replicas are on different nodes
 							Host host = this.nodeId_host_map.get(node_id);
@@ -385,6 +425,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 						all_blocks.add(file_block);
 						int replica_no = 1;
 						//Here we actually send the replicas to the corresponding data_nodes using java RMI
+					
 						for (String nodeID : to_send_nodes){	
 							DataNodeInterface current_data_node = (DataNodeInterface) this.main_registry.lookup(nodeID);
 							current_data_node.initiateBlock(byte_array,file_block,file.getDFSFile_id());
@@ -395,9 +436,19 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 						previous_block_end = line_no;
 						block_no++;
 						file_block = new DFSBlock(file.getFile().getName(),file.getDFSFile_id(),block_no,new Tuple<Integer,Integer>(),null);
-						byte_array = new byte[line_length*SPLIT_SIZE];
+						bos = new ByteArrayOutputStream(line_length*SPLIT_SIZE);
 					}
-					bos.write(byte_array, line_no * line_length,line_length);
+					byte[] line_byte_array = line.getBytes();
+					int index;
+					if (line_no % SPLIT_SIZE == 0){
+						index = 0;
+					}
+					else{
+						index = ((line_no % SPLIT_SIZE) * line_length) -1;
+					}
+					bos.write(line_byte_array, 0,line_byte_array.length);
+					bos.write((byte) '\n');
+					bos.flush();
 					line_no ++;
 					isEmpty = false;
 				}
@@ -406,6 +457,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 					br.close();
 					block_hosts = new HashSet<Host>();
 					file.getBlockIDMap().put(block_no, file_block);
+					byte_array = bos.toByteArray();
 					for (int j = 0; j < replication_factor; j++){//to distribute replicas
 						String node_id = data_node_queue.removeFirst();//next datablock in queue. this ensures replicas are on different nodes
 						Host host = this.nodeId_host_map.get(node_id);							
@@ -527,7 +579,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			e.printStackTrace();
 		}
 		DFSFile new_dfs_file = new DFSFile(file,job_id); /*Construct dfs file with unique id */
-		/*Add to the buffer before partitioning. If hashmap already contains then append, else create new list */
+		this.fileID_byte_arr.put(new_dfs_file.getDFSFile_id(), byte_array);
+		/*Add to the buffer before partitioning. If hashmap already contains then append, else create new list 
+		 *This map stores which slaves sent which dfs file
+		 * */
 		if (this.slave_dfsfile_buffer.contains(map_reducer_id)){
 			this.slave_dfsfile_buffer.get(map_reducer_id).add(new_dfs_file);
 		}

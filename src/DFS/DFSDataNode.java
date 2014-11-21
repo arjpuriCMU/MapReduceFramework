@@ -8,7 +8,11 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.rmi.AccessException;
+import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -18,12 +22,17 @@ import java.util.HashMap;
 import java.util.List;
 
 import Config.InternalConfig;
+import Master.MapReduceMasterInterface;
 import Messages.Handshake;
 import Util.FileFunctions;
 import Util.Tuple;
 
 public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterface {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public InetAddress name_node_host;
 	public int port;
 	public boolean active;
@@ -34,6 +43,8 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 	private String store_path;
 	private int health = 100;
 	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
+	private String data_node_host;
+	private Registry registry;
 	
 	public DFSDataNode(String data_nodeId, InetAddress inetAddress,int port) throws RemoteException{
 		this.active = true;
@@ -41,6 +52,11 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		this.port = port;
 		this.data_nodeId = data_nodeId;
 		this.store_path = STORAGE_PATH + data_nodeId + "/";
+		try {
+			this.data_node_host = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 		file_block_replicas_map = new HashMap<String,List<DFSBlock>>();
 		block_file_map = new HashMap<Tuple<String,Integer>,File>();
 	}
@@ -79,28 +95,48 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		return this.file_block_replicas_map;
 	}
 	
+	public String getHostName(){
+		return this.data_node_host;
+	}
+	
 	@SuppressWarnings("resource")
 	public void start(){
 		System.out.println("DFSDataNode ID " + this.data_nodeId + " is starting...");
 		try {
 			Socket socket = new Socket(name_node_host.getHostAddress(),port);
 			ObjectOutputStream output_stream = new ObjectOutputStream(socket.getOutputStream());
-			output_stream.writeObject(new Handshake(this.data_nodeId));
+			output_stream.writeObject(new Handshake(this.data_nodeId,this.data_node_host));
 			socket.close();
 			
 		} catch (IOException e) {
 			System.out.println("DFS Node unable to connect");
 		}
 		System.out.println("DFSDataNode ID " + this.data_nodeId + " binding with NameNode Registry");
+		registry = null;
+		int free_port;
 		try {
-			Registry registry = LocateRegistry.getRegistry(this.name_node_host.getHostAddress(), REGISTRY_PORT);
-			registry.rebind(this.data_nodeId, this);
+			Registry name_node_registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, REGISTRY_PORT);
+			DFSNameNodeInterface name_node= (DFSNameNodeInterface) name_node_registry.lookup(InternalConfig.NAME_NODE_ID);
+			free_port = name_node.getFreeRegistryPort();
+			
+			registry = LocateRegistry.createRegistry(free_port);
+			registry.bind(this.data_nodeId, this);
+			name_node.addDataNodeRegistryInfo(this.data_nodeId, new Tuple<String,Integer>(InetAddress.getLocalHost().getHostName(),free_port));
+//			System.setProperty("java.rmi.server.hostname", master.getMasterHost());
+////			master.proxyBindDataNode(this.data_nodeId, this);
+////			registry.bind(this.data_nodeId, this);
 		} catch (RemoteException e) {
 			e.printStackTrace();
-		} 
+		} catch (NotBoundException e) {
+			e.printStackTrace();
+		} catch (AlreadyBoundException e) {
+			e.printStackTrace();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		FileFunctions.createDirectory(store_path);
 		startHeartbeat();
-		
 	}
 
 	private void startHeartbeat() {
@@ -121,6 +157,7 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		File block_file = new File(file_block.getHostBlockPath(this.data_nodeId));
 		int bytesRead;
 		FileOutputStream fos;
+	
 		try {
 			fos = new FileOutputStream(block_file);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);

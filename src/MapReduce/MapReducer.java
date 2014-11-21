@@ -19,6 +19,7 @@ import DFS.DFSNameNodeInterface;
 import Master.MapReduceMasterInterface;
 import Util.FileFunctions;
 import Util.Host;
+import Util.JavaCustomClassLoader;
 import Util.Tuple;
 
 
@@ -35,9 +36,7 @@ import Util.Tuple;
 public class MapReducer {
 
 	//TO DO:
-	//change registry to master's host, and instantiate registry on master
-	//add name node host to master
-	//this data node has to get name node host for registry
+	//Make the user put text files and stuff into the files directory
 	
     private DFSDataNode data_node;
     private Registry registry;
@@ -52,11 +51,14 @@ public class MapReducer {
      */
     public MapReducer(String participantID, Host master_host) throws Exception {
     	this.setMap_reducer_id(participantID);
+    	jobIDs = new HashSet<String>();
+    	InternalConfig.REGISTRY_HOST = master_host.hostname;
         /* Connect to Master Registry, and get name node and data node remote references */
     	registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
         name_node= (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
         master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
-
+        
+        System.out.println(InetAddress.getLocalHost().getHostAddress());
         /* Construct and Start DFS dataNode layer (local) */
         InetAddress inet = InetAddress.getByName(name_node.getHost().getHostName());
         String data_node_id = InternalConfig.generateDataNodeId(participantID);
@@ -66,7 +68,7 @@ public class MapReducer {
         /* Construct and Start local Task Manager and bind it to registry */
         task_manager = new TaskManager(data_node_id,Runtime.getRuntime().availableProcessors());
         (new Thread(task_manager)).start();
-        registry.bind(InternalConfig.generateTaskManagerId(InetAddress.getLocalHost().getHostName()),task_manager);
+        
 
         /* Establishes connection to master */
     	master.handshakeWithSlave(participantID,data_node_id);
@@ -75,19 +77,22 @@ public class MapReducer {
     //TODO: Jar file containing MapReduceInterface
     public void runJob(MapReducerConfig config, File[] files) throws Exception {
     	String mapper_name = config.getMapperClass().getName();
-		String reducer_name = config.getMapperClass().getName();
+		String reducer_name = config.getReducerClass().getName();
 		/* Example:  */
 		Tuple<String,String> map_tuple = new Tuple<String,String>(mapper_name,mapper_name.replace('.', '/') + ".class");
-		Tuple<String,String> red_tuple = new Tuple<String,String>(reducer_name, reducer_name.replace('.', '/'));
+		Tuple<String,String> red_tuple = new Tuple<String,String>(reducer_name, reducer_name.replace('.', '/') + ".class");
 		
+		/*Convert the map task to a byte array */
 		Class<?> map_class = config.getMapperClass();
 		String map_name = map_class.getName();
 		String classAsPath_map = map_name.replace('.', '/') + ".class";
 		InputStream stream = map_class.getClassLoader().getResourceAsStream(classAsPath_map);
 		byte[] map_class_byte_array = FileFunctions.toByteArray(stream);
-		String reduce_name = map_class.getName();
-		String classAsPath_reduce = map_name.replace('.', '/') + ".class";
-		InputStream stream1 = map_class.getClassLoader().getResourceAsStream(classAsPath_reduce);
+		/*Convert the reduce task to a byte array */
+		Class<?> reduce_class = config.getReducerClass();
+		String reduce_name = reduce_class.getName();
+		String classAsPath_reduce = reduce_name.replace('.', '/') + ".class";
+		InputStream stream1 = reduce_class.getClassLoader().getResourceAsStream(classAsPath_reduce);
 		byte[] reduce_class_byte_array = FileFunctions.toByteArray(stream1);
         String jobID = master.createJob(map_reducer_id,config,map_class_byte_array,reduce_class_byte_array,map_tuple,red_tuple);
         Set<String> file_ids = SendFilesToNameNode(jobID, files);

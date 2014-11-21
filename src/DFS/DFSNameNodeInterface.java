@@ -10,8 +10,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import Util.Host;
+import Util.Tuple;
 
-public interface DFSNameNodeInterface extends Remote {
+public interface name_node_registry extends Remote {
 	public ConcurrentHashMap<String,Boolean> getIdActiveMap() throws RemoteException;
 	public ConcurrentHashMap<String,Host> getIdHostMap() throws RemoteException;
 	public void start() throws RemoteException;
@@ -28,5 +29,10 @@ public interface DFSNameNodeInterface extends Remote {
 	public Set<String> flushFilesToDataNodes(String map_reducer_id) throws RemoteException;
     public ConcurrentHashMap<String,Set<DFSBlock>> getFileIDBlockMap() throws RemoteException;
 	public boolean fileExists(String input_file) throws RemoteException;
+	public void quit() throws RemoteException;
+	public int getFreeRegistryPort() throws RemoteException;
+	public void addDataNodeRegistryInfo(String data_nodeId,
+			Tuple<String, Integer> tuple) throws RemoteException;
+	public ConcurrentHashMap<String,Tuple<String,Integer>> getDataNodeRegistryInfo() throws RemoteException;
 
 }

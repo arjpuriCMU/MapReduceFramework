@@ -2,6 +2,7 @@ package Main;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import Config.InternalConfig;
 import DFS.DFSDataNode;
 import DFS.DFSNameNode;
 import Master.Master;
@@ -13,6 +14,8 @@ public class Main {
 		if (args.length == 1){
 			int input_port = Integer.parseInt(args[0]);
 			master = new Master(input_port);
+			String master_hostname = InetAddress.getLocalHost().getHostName();
+			InternalConfig.MASTER_HOSTNAME = master_hostname;
 			master.start();
 		}
 		else if (args.length == 4){

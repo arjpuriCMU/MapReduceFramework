@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RemoteObject;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -21,8 +24,10 @@ import Config.InternalConfig;
 import DFS.ConnectionManagerInterface;
 import DFS.DFSBlock;
 import DFS.DFSConnectionManager;
+import DFS.DFSDataNode;
 import DFS.DFSFile;
 import DFS.DFSNameNode;
+import DFS.DataNodeInterface;
 import DFS.HealthMonitor;
 import MapReduce.MapReducerConfig;
 import Util.FileFunctions;
@@ -30,9 +35,7 @@ import Util.Host;
 import Util.Tuple;
 
 public class Master extends UnicastRemoteObject implements MapReduceMasterInterface {
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
 	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
 	private int port;
@@ -45,12 +48,21 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
     private ScheduleManager scheduleManager;
 	private ConcurrentHashMap<String,Tuple<byte[],byte[]>> jobId_class_byte_array_map;
 	private ConcurrentHashMap<String,Tuple<String,String>> jobId_mapname_map;
+	private String host;
+	
+	
 	
 	public Master(int port) throws RemoteException{
 		slave_ids = new HashSet<String>();
 		jobId_class_byte_array_map = new ConcurrentHashMap<String,Tuple<byte[],byte[]>>();
 		this.jobId_mapname_map = new ConcurrentHashMap<String,Tuple<String,String>>();
+		this.jobs = new ConcurrentHashMap<String,JobHandler>();
 		this.port = port;
+		try {
+			this.host = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e2) {
+			e2.printStackTrace();
+		}
 		try {
 			InternalConfig.REGISTRY_HOST = InetAddress.getLocalHost().getHostName();
 		} catch (UnknownHostException e1) {
@@ -60,6 +72,7 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		try {
 			main_registry = LocateRegistry.createRegistry(REGISTRY_PORT);
 			main_registry.bind(InternalConfig.MAP_REDUCE_MASTER_ID, this);
+			
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (AlreadyBoundException e) {
@@ -68,6 +81,11 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		name_node = new DFSNameNode(port);
 		name_node.start();
 		name_node.initRegistry();
+		try {
+			System.setProperty("java.rmi.server.hostname", InetAddress.getLocalHost().getHostName());
+		} catch (UnknownHostException e1) {
+			e1.printStackTrace();
+		}
 		setName_node_host(new Host(name_node.getHost().getHostName(),port));
 		slave_id_datanode_id_map = new ConcurrentHashMap<String,String>();
         /* Start Schedule Manager and put it in registry*/
@@ -80,10 +98,35 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
             e.printStackTrace();
         }
     }
+	
+	public String getMasterHost(){
+		return this.host;
+	}
 
 	public Host getName_node_host() {
 		return name_node_host;
 	}
+	
+
+//	
+//	public void proxyBindDataNode(String data_nodeId, DataNodeInterface dfsDataNode){
+//		System.out.print("Binding " + data_nodeId );
+//		try {
+//			main_registry.bind(data_nodeId, dfsDataNode);
+//		} catch (RemoteException | AlreadyBoundException e) {
+//			e.printStackTrace();
+//		}
+//	}
+//	
+//	/*This allows other remote objects to bind themselves to the registry from a non-local host */
+//	public void proxyBind(String id, RemoteObject o){
+//		System.out.print("Binding " + id );
+//		try {
+//			main_registry.bind(id, o);
+//		} catch (RemoteException | AlreadyBoundException e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 
 	public void setName_node_host(Host name_node_host) {
@@ -125,7 +168,7 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		String map_path = ConfigSettings.UPLOAD_PATH + mapper_name[mapper_name.length-1] + "-" + jobID + ".class";
 		String reduce_path = ConfigSettings.UPLOAD_PATH + reducer_name[reducer_name.length-1] + "-" + jobID + ".class";
 		jobId_class_byte_array_map.put(jobID,new Tuple<byte[],byte[]>(map_class_byte_array,reduce_class_byte_array));
-		this.jobId_mapname_map.put(jobID, new Tuple<String,String>(mapper_name[mapper_name.length-1],reducer_name[reducer_name.length-1]));
+		this.jobId_mapname_map.put(jobID, new Tuple<String,String>(map_tuple.getFirst(),red_tuple.getFirst()));
 		return jobID;
     }
 
@@ -151,6 +194,7 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 
             /* If user quits nameNode */
 			if (args[0].toLowerCase().equals("quit")){
+				this.name_node.quit();
 				System.exit(0);
 			}
 
