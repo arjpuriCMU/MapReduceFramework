@@ -136,7 +136,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			file_block_host_map.put(new Tuple<DFSFile, DFSBlock>(dfs_file,block),destination_node);
 			block.getBlockHosts().add(this.nodeId_host_map.get(destination_node));
 			try {
-				DataNodeInterface current_data_node = (DataNodeInterface) this.main_registry.lookup(destination_node);
+				String registry_host = this.data_nodeID_registry_info_map.get(destination_node).getFirst();
+				int registry_port = this.data_nodeID_registry_info_map.get(destination_node).getSecond();
+				Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
+				DataNodeInterface current_data_node = (DataNodeInterface) data_node_registry.lookup(destination_node);
 				current_data_node.initiateBlock(byte_array, block,dfs_file.getDFSFile_id());
 			} catch (RemoteException e) {
 				e.printStackTrace();
@@ -427,7 +430,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 						//Here we actually send the replicas to the corresponding data_nodes using java RMI
 					
 						for (String nodeID : to_send_nodes){	
-							DataNodeInterface current_data_node = (DataNodeInterface) this.main_registry.lookup(nodeID);
+							String registry_host = this.data_nodeID_registry_info_map.get(nodeID).getFirst();
+							int registry_port = this.data_nodeID_registry_info_map.get(nodeID).getSecond();
+							Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
+							DataNodeInterface current_data_node = (DataNodeInterface) data_node_registry.lookup(nodeID);
 							current_data_node.initiateBlock(byte_array,file_block,file.getDFSFile_id());
 							replica_no++;
 						}
@@ -475,7 +481,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 					int replica_no = 1;
 					//Here we actually send the replicas to the corresponding data_nodes using java RMI
 					for (String nodeID : to_send_nodes){	
-						DataNodeInterface current_data_node = (DataNodeInterface) this.main_registry.lookup(nodeID);
+						String registry_host = this.data_nodeID_registry_info_map.get(nodeID).getFirst();
+						int registry_port = this.data_nodeID_registry_info_map.get(nodeID).getSecond();
+						Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
+						DataNodeInterface current_data_node = (DataNodeInterface) data_node_registry.lookup(nodeID);
 						current_data_node.initiateBlock(byte_array,file_block,file.getDFSFile_id());
 						replica_no++;
 					}
@@ -528,7 +537,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		Tuple<String,Integer> tuple;
 		DataNodeInterface current_data_node = null;
 		try {
-			current_data_node = (DataNodeInterface) this.main_registry.lookup(nodeId);
+			String registry_host = this.data_nodeID_registry_info_map.get(nodeId).getFirst();
+			int registry_port = this.data_nodeID_registry_info_map.get(nodeId).getSecond();
+			Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
+			current_data_node = (DataNodeInterface) data_node_registry.lookup(nodeId);
 		} catch (AccessException e1) {
 			e1.printStackTrace();
 		} catch (RemoteException e1) {
@@ -540,7 +552,6 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 			DFSFile dfs_file = find_file(block.getFileName());
 			tuple = new Tuple<String,Integer>(dfs_file.getDFSFile_id(),block.getBlockNumber());
 			byte[] byte_array =  fileID_block_file_map.get(tuple);
-			FileInputStream fis;
 			try {
 				current_data_node.initiateBlock(byte_array, block,dfs_file.getDFSFile_id());
 			} catch (RemoteException e) {
@@ -565,7 +576,6 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	@Override
 	public void bindFileFromByteArray(String name,byte[] byte_array,String job_id,String map_reducer_id) throws RemoteException {
 		File file = new File(name);
-		int bytesRead;
 		FileOutputStream fos;
 		try {
 			/*Receive files from MapReducer and create DFSFile */

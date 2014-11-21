@@ -51,7 +51,6 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	private String host;
 	
 	
-	
 	public Master(int port) throws RemoteException{
 		slave_ids = new HashSet<String>();
 		jobId_class_byte_array_map = new ConcurrentHashMap<String,Tuple<byte[],byte[]>>();

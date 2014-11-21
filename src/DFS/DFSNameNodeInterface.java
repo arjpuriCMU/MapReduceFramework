@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import Util.Host;
 import Util.Tuple;
 
-public interface name_node_registry extends Remote {
+public interface DFSNameNodeInterface extends Remote {
 	public ConcurrentHashMap<String,Boolean> getIdActiveMap() throws RemoteException;
 	public ConcurrentHashMap<String,Host> getIdHostMap() throws RemoteException;
 	public void start() throws RemoteException;

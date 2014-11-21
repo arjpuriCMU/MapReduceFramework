@@ -3,6 +3,7 @@ package MapReduce;
 import Config.InternalConfig;
 import DFS.DFSBlock;
 import DFS.DFSDataNode;
+import DFS.DFSNameNodeInterface;
 import DFS.DataNodeInterface;
 import Master.MapReduceMasterInterface;
 import Master.Master;
@@ -46,7 +47,7 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
     public Registry registry;
     ExecutorService threadPool;
     public MapReduceMasterInterface master;
-    private DataNodeInterface data_node;
+    public DataNodeInterface current_data_node;
 
     public TaskManager(String dataNodeID, int cores) throws RemoteException{
         this.dataNodeID = dataNodeID;
@@ -56,22 +57,24 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         mappers = new ConcurrentHashMap<>();
         reducers = new ConcurrentHashMap<>();
         threadPool = Executors.newFixedThreadPool(cores);
+        /* Master registry */
         registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST,InternalConfig.REGISTRY_PORT);
         try {
-			data_node = (DataNodeInterface) registry.lookup(dataNodeID);
-		} catch (NotBoundException e2) {
-			e2.printStackTrace();
-		}
-        try {
-        	MapReduceMasterInterface master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
-			master.proxyBind(InternalConfig.generateTaskManagerId(data_node.getHostName()), this);
-//			registry.bind(InternalConfig.generateTaskManagerId(data_node.getHostName()),this);
+        	master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
+        	
+        	/*Get the name node from the central registry */
+        	DFSNameNodeInterface name_node = (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
+        	/* Get the corresponding data node's registry info */
+        	String registry_host = name_node.getDataNodeRegistryInfo().get(dataNodeID).getFirst();
+			int registry_port = name_node.getDataNodeRegistryInfo().get(dataNodeID).getSecond();
+			/*Get the data node registry */
+			Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
+			current_data_node = (DataNodeInterface) data_node_registry.lookup(dataNodeID);
+			/*bind task manager to data node's registry */
+			data_node_registry.bind(InternalConfig.generateTaskManagerId(current_data_node.getHostName()), this);
 		} catch (NotBoundException e1) {
 			e1.printStackTrace();
-		}
-        try {
-			master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
-		} catch (NotBoundException e) {
+		} catch (AlreadyBoundException e) {
 			e.printStackTrace();
 		}
     }

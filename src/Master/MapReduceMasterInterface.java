@@ -24,8 +24,6 @@ public interface MapReduceMasterInterface extends Remote {
     public Host getName_node_host() throws RemoteException;
     public void setName_node_host(Host name_node_host) throws RemoteException;
     public void start() throws RemoteException;
-    public void proxyBind(String id, RemoteObject o) throws RemoteException;
-	public void proxyBindDataNode(String data_nodeId, DataNodeInterface dfsDataNode) throws RemoteException;
 	public String getMasterHost() throws RemoteException;
 
 
