@@ -61,7 +61,6 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST,InternalConfig.REGISTRY_PORT);
         try {
         	master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
-        	
         	/*Get the name node from the central registry */
         	DFSNameNodeInterface name_node = (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
         	/* Get the corresponding data node's registry info */
