@@ -84,6 +84,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		return this.node_ids;
 	}
 	
+	public int getPort(){
+		return this.port;
+	}
+	
 	/*Gets a free port for the data node to bind to */
 	public int getFreeRegistryPort(){
 		this.temp_free_port ++;

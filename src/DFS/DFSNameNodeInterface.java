@@ -34,5 +34,7 @@ public interface DFSNameNodeInterface extends Remote {
 	public void addDataNodeRegistryInfo(String data_nodeId,
 			Tuple<String, Integer> tuple) throws RemoteException;
 	public ConcurrentHashMap<String,Tuple<String,Integer>> getDataNodeRegistryInfo() throws RemoteException;
+	public int getPort() throws RemoteException;
+	public Set<String> getNodeIds() throws RemoteException;
 
 }

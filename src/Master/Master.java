@@ -80,11 +80,7 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		name_node = new DFSNameNode(port);
 		name_node.start();
 		name_node.initRegistry();
-		try {
-			System.setProperty("java.rmi.server.hostname", InetAddress.getLocalHost().getHostName());
-		} catch (UnknownHostException e1) {
-			e1.printStackTrace();
-		}
+	
 		setName_node_host(new Host(name_node.getHost().getHostName(),port));
 		slave_id_datanode_id_map = new ConcurrentHashMap<String,String>();
         /* Start Schedule Manager and put it in registry*/

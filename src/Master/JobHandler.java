@@ -6,6 +6,7 @@ import DFS.DFSNameNode;
 import DFS.DFSNameNodeInterface;
 import MapReduce.TaskManager;
 import MapReduce.TaskManagerInterface;
+import Util.Host;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 
 
@@ -27,12 +29,11 @@ public class JobHandler {
    private ScheduleManagerInterface scheduler;
    private DFSNameNodeInterface name_node;
    private HashMap<String,Set<DFSBlock>> partitions;
-   private String JarFile;
 
    public JobHandler(String jobID)
    {
        this.jobID = jobID;
-       partitions = new HashMap<>();
+       partitions = new HashMap<String,Set<DFSBlock>>();
    }
 
    public void start(Set<String> file_ids) throws Exception{
@@ -52,7 +53,7 @@ public class JobHandler {
                 HashSet<DFSBlock> blocks = null;
 
                 if(partitions.containsKey(hostName)) //partition exists
-                    blocks = (HashSet) partitions.get(hostName);
+                    blocks = (HashSet<DFSBlock>) partitions.get(hostName);
                 else //new partition
                     blocks = new HashSet<DFSBlock>();
 
@@ -63,13 +64,28 @@ public class JobHandler {
 
        /* Send tasks to appropriate TaskManagers */
        Set<String> hosts = partitions.keySet();
-       for(String host : hosts)
-       {
-           TaskManagerInterface taskManagerInterface =
-                   (TaskManagerInterface) registry.lookup(InternalConfig.generateTaskManagerId(host));
-           taskManagerInterface.addJob(jobID,partitions.get(host));
+       ConcurrentHashMap<String, Host> idToHostMap = name_node.getIdHostMap();
+       for(String host : hosts){
+    	   System.out.println(host);
+    	   String data_node_id = findDataNodeID(idToHostMap, host);
+    	   String registry_host = name_node.getDataNodeRegistryInfo().get(data_node_id).getFirst();
+    	   int registry_port = name_node.getDataNodeRegistryInfo().get(data_node_id).getSecond();
+		/*Get the data node registry */
+    	   Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
+    	   TaskManagerInterface taskManagerInterface = (TaskManagerInterface) data_node_registry.lookup(InternalConfig.generateTaskManagerId(host));
+    	   taskManagerInterface.addJob(jobID,partitions.get(host));
        }
    }
+   
+	private String findDataNodeID(ConcurrentHashMap<String, Host> idToHostMap, String host) {
+		for (String s : idToHostMap.keySet()){
+			if (idToHostMap.get(s).hostname.equals(host)){
+				return s;
+			}
+		}
+		System.out.println("izzz NULL!");
+		return null;
+	}
 
    public boolean getActive() {return this.active;}
 

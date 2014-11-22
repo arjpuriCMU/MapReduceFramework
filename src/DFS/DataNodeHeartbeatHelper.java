@@ -44,7 +44,7 @@ public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runn
 		try {
 			/* Get the data node registry info */
 			name_node_registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST,REGISTRY_PORT);
-			DFSNameNodeInterface name_node = (DFSNameNodeInterface) name_node_registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
+			DFSNameNodeInterface name_node = (DFSNameNodeInterface) name_node_registry.lookup(InternalConfig.NAME_NODE_ID);
 			Tuple<String,Integer> data_node_registry_info = name_node.getDataNodeRegistryInfo().get(node_id);
 			/*Bind the heartbeat helper to the data node registry */
 			Registry data_node_registry = LocateRegistry.getRegistry(data_node_registry_info.getFirst(), data_node_registry_info.getSecond());

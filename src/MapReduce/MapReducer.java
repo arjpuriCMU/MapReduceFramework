@@ -58,12 +58,20 @@ public class MapReducer {
         name_node= (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
         master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
         
+        /* Locate an already existing data node */
+        String data_node_id = null;
+        Set<String> all_node_ids = name_node.getNodeIds();
+        for (String s : all_node_ids){
+        	if (InternalConfig.generateDataNodeId(participantID).equals(s)){
+        		data_node_id = s;
+        	}
+        }
         System.out.println(InetAddress.getLocalHost().getHostAddress());
         /* Construct and Start DFS dataNode layer (local) */
         InetAddress inet = InetAddress.getByName(name_node.getHost().getHostName());
-        String data_node_id = InternalConfig.generateDataNodeId(participantID);
-        data_node = new DFSDataNode(data_node_id, inet, master_host.port);
-        data_node.start();
+//        String data_node_id = InternalConfig.generateDataNodeId(participantID);
+//        data_node = new DFSDataNode(data_node_id, inet, master_host.port);
+//        data_node.start();
 
         /* Construct and Start local Task Manager and bind it to registry */
         task_manager = new TaskManager(data_node_id,Runtime.getRuntime().availableProcessors());
@@ -94,8 +102,10 @@ public class MapReducer {
 		String classAsPath_reduce = reduce_name.replace('.', '/') + ".class";
 		InputStream stream1 = reduce_class.getClassLoader().getResourceAsStream(classAsPath_reduce);
 		byte[] reduce_class_byte_array = FileFunctions.toByteArray(stream1);
+		
         String jobID = master.createJob(map_reducer_id,config,map_class_byte_array,reduce_class_byte_array,map_tuple,red_tuple);
         Set<String> file_ids = SendFilesToNameNode(jobID, files);
+        
         master.startJob(jobID,file_ids,config);
         jobIDs.add(jobID);
     }

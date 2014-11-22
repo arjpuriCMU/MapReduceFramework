@@ -28,7 +28,7 @@ public class WordCount {
 		files[0] = tropicThunder;
 		MapReducer map_reducer = null;
 		try {
-			map_reducer = new MapReducer("WordcountClient",new Host("unix5.andrew.cmu.edu",8080)); //update to config file
+			map_reducer = new MapReducer("WordcountClient",new Host("unix1.andrew.cmu.edu",8080)); //update to config file
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
