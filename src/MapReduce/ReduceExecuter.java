@@ -1,11 +1,11 @@
 package MapReduce;
 
         import IOFormat.KeyValuePair;
-        import IOFormat.MapperCollector;
-        import IOFormat.ReducerCollector;
+import IOFormat.MapperCollector;
+import IOFormat.ReducerCollector;
 
         import java.io.*;
-        import java.util.*;
+import java.util.*;
 
 /**
  * Created by karansharma on 11/19/14.
@@ -31,9 +31,10 @@ public class ReduceExecuter implements Runnable {
         BufferedReader br = null;
         SortedMap<String,ArrayList<String>> mergedMapOutput = new TreeMap<String,ArrayList<String>>();
         String line;
-
+        String tempPath = null;
         for(String filePath : filePaths)
         {
+        	tempPath = filePath;
             /* Create Reader for File */
             try {
                 br = new BufferedReader(new FileReader(filePath));
@@ -58,17 +59,18 @@ public class ReduceExecuter implements Runnable {
                 e.printStackTrace();
             }
         }
-
+        System.out.println("mapsize" + mergedMapOutput.size());
 
         /* Collect Reduce Output */
         ReducerCollector collector = new ReducerCollector();
         for(String key : mergedMapOutput.keySet())
         {
+        	System.out.println("reducing " + key);
             reducer.reduce(key,mergedMapOutput.get(key),collector);
         }
 
         /* Setup Reduce Output File */
-        String outFilePath = "";
+        String outFilePath = tempPath.replace(".txt", "reduce.txt");
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(outFilePath, "UTF-8");
@@ -86,11 +88,12 @@ public class ReduceExecuter implements Runnable {
             //TODO: FAILURE HANDLING
             return;
         }
-
+        System.out.println("reduce output len: " + reduceOutput.size());
         for(KeyValuePair kvp : reduceOutput) {
             writer.println(kvp.toString());
         }
         writer.close();
+        
 
     }
 

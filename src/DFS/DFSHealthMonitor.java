@@ -66,7 +66,8 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 			node_health_map.put(node_id, node_health_map.get(node_id)+val);
 		}
 		catch (NullPointerException e) {
-			
+			System.out.println("An error occurred with the system. Please restart");
+			System.exit(0);
 		}
 	}
 	

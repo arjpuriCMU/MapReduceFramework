@@ -12,6 +12,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import Config.InternalConfig;
 import DFS.DFSDataNode;
@@ -44,7 +45,6 @@ public class MapReducer {
     private MapReduceMasterInterface master;
     private String map_reducer_id;
     private HashSet<String> jobIDs;
-    private TaskManager task_manager;
 
     /*
        Constructor that connects to master node of MapReduce system.
@@ -63,22 +63,23 @@ public class MapReducer {
         /* Locate an already existing data node */
         String data_node_id = null;
         Set<String> all_node_ids = name_node.getNodeIds();
-        for (String s : all_node_ids){
-        	if (InternalConfig.generateDataNodeId(participantID).equals(s)){
+        ConcurrentHashMap<String,Host> data_node_hosts = name_node.getIdHostMap();
+        for (String s : data_node_hosts.keySet()){
+        	if (data_node_hosts.get(s).hostname.equals(InetAddress.getLocalHost().getHostName())){
         		data_node_id = s;
         	}
         }
 
         System.out.println(InetAddress.getLocalHost().getHostAddress());
+        System.out.println(data_node_id);
         /* Construct and Start DFS dataNode layer (local) */
         InetAddress inet = InetAddress.getByName(name_node.getHost().getHostName());
 //        String data_node_id = InternalConfig.generateDataNodeId(participantID);
 //        data_node = new DFSDataNode(data_node_id, inet, master_host.port);
 //        data_node.start();
-
-        /* Construct and Start local Task Manager and bind it to registry */
-        task_manager = new TaskManager(data_node_id,Runtime.getRuntime().availableProcessors());
-        (new Thread(task_manager)).start();
+        if (data_node_id == null){
+        	throw new RuntimeException ("Must run a job from a machine already existing on the system");
+        }
         
 
         /* Establishes connection to master */

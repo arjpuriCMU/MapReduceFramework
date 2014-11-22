@@ -2,7 +2,6 @@ package MapReduce;
 
 import IOFormat.KeyValuePair;
 import IOFormat.MapperCollector;
-import com.sun.xml.internal.ws.util.QNameMap;
 
 import java.io.*;
 import java.util.*;

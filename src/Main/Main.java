@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import Config.InternalConfig;
 import DFS.DFSDataNode;
 import DFS.DFSNameNode;
+import MapReduce.TaskManager;
 import Master.Master;
 
 
@@ -18,7 +19,7 @@ public class Main {
 			InternalConfig.MASTER_HOSTNAME = master_hostname;
 			master.start();
 		}
-		else if (args.length == 4){
+		else if (args.length == 4){ 
 			if (args[0].toLowerCase().equals("-d")){
 				System.out.println("Creating Data Node...");
 				int port = Integer.parseInt(args[2]);
@@ -27,6 +28,9 @@ public class Main {
 				InetAddress inet = InetAddress.getByName(host);
 				DFSDataNode data_node = new DFSDataNode(node_id,inet,port);
 				data_node.start();
+				/* Construct and Start local Task Manager and bind it to the registry */
+				TaskManager task_manager = new TaskManager(node_id,Runtime.getRuntime().availableProcessors());
+		        (new Thread(task_manager)).start();
 			}
 			else{
 				System.out.println("Arguments were not recognized");

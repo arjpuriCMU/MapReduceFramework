@@ -120,6 +120,7 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         mapOutputFiles.put(jobID,outFiles);
 
         /* If last map was executed, execute reduce */
+        System.out.println(mapsLeft.get(jobID));
         if (mapsLeft.get(jobID) == 0)
         {
             ReduceExecuter reduceExecuter =

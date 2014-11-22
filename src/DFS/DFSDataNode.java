@@ -52,6 +52,8 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		this.port = port;
 		this.data_nodeId = data_nodeId;
 		this.store_path = STORAGE_PATH + data_nodeId + "/";
+		/*Register the master's host name as the registry's host */
+		InternalConfig.REGISTRY_HOST = inetAddress.getHostName();
 		try {
 			this.data_node_host = InetAddress.getLocalHost().getHostName();
 		} catch (UnknownHostException e) {
@@ -102,6 +104,7 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 	@SuppressWarnings("resource")
 	public void start(){
 		System.out.println("DFSDataNode ID " + this.data_nodeId + " is starting...");
+		/*Handshake with the Connection manager to register node Id with the master */
 		try {
 			Socket socket = new Socket(name_node_host.getHostAddress(),port);
 			ObjectOutputStream output_stream = new ObjectOutputStream(socket.getOutputStream());
@@ -157,7 +160,7 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		File block_file = new File(file_block.getHostBlockPath(this.data_nodeId));
 		int bytesRead;
 		FileOutputStream fos;
-	
+		/*Store the block locally on the data node */
 		try {
 			fos = new FileOutputStream(block_file);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
