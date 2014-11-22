@@ -6,11 +6,11 @@ import MapReduce.Mapper;
 public class WordCountMap implements Mapper {
 
 	@Override
-	public void map(Object key, Object value,
-			MapperCollector mapperOutputCollector) {
-		String temp_key = (String) key;
-		int temp_value = 1;
-		mapperOutputCollector.addOutput(temp_key, temp_value);
+	public void map(String line, MapperCollector mapperOutputCollector) {
+		String[] words = line.split(" ");
+        for(String word : words) {
+            mapperOutputCollector.addOutput(word, 1);
+        }
 	}
 	
 	public void sex(){

@@ -123,7 +123,7 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         if (mapsLeft.get(jobID) == 0)
         {
             ReduceExecuter reduceExecuter =
-                    new ReduceExecuter(this,jobID, reducers.get(jobID), outFiles);
+                    new ReduceExecuter(this, jobID, reducers.get(jobID), outFiles);
             reduceExecuter.run();
         }
     }

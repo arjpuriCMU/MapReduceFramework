@@ -1,22 +1,21 @@
 package IOFormat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class ReducerCollector {
 
-	public SortedMap<Object,ArrayList<Object>> reducerCollector = new TreeMap<Object,ArrayList<Object>>();
-	
-	public void addOutput(Object key, Object value){
-		if (reducerCollector.containsKey(key)){
-			reducerCollector.get(key).add(value);
-			
-		}
-		else{
-			ArrayList<Object> list = new ArrayList<Object>();
-			list.add(value);
-			reducerCollector.put(key, list);
-		}
-	}
+    private ArrayList<KeyValuePair> reducerOutputCollection = new ArrayList<KeyValuePair>();
+
+    public void addOutput(Object key, Object val){
+        reducerOutputCollection.add(new KeyValuePair(key, val));
+    }
+
+    public ArrayList<KeyValuePair> getReducerOutputCollection()
+    {
+        /* Already Sorted */
+        return  reducerOutputCollection;
+    }
 }

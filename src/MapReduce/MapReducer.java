@@ -46,16 +46,18 @@ public class MapReducer {
     private HashSet<String> jobIDs;
     private TaskManager task_manager;
 
-    /* Constructor that connects to master node of MapReduce system.
+    /*
+       Constructor that connects to master node of MapReduce system.
        ParticipantID specifies the name of this user for future use.
      */
     public MapReducer(String participantID, Host master_host) throws Exception {
     	this.setMap_reducer_id(participantID);
     	jobIDs = new HashSet<String>();
     	InternalConfig.REGISTRY_HOST = master_host.hostname;
+
         /* Connect to Master Registry, and get name node and data node remote references */
     	registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
-        name_node= (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
+        name_node = (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
         master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
         
         /* Locate an already existing data node */
@@ -66,6 +68,7 @@ public class MapReducer {
         		data_node_id = s;
         	}
         }
+
         System.out.println(InetAddress.getLocalHost().getHostAddress());
         /* Construct and Start DFS dataNode layer (local) */
         InetAddress inet = InetAddress.getByName(name_node.getHost().getHostName());
