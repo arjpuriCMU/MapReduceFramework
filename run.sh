@@ -1,14 +1,12 @@
 make clean
 bash bundle.sh
 
-if [ "$#" -eq 0 ]
+if [ "$#" -eq 1 ]
 then
-	echo "Running Master"
-	java -cp src/rmi.jar RMIServer.ServerWrapper
-elif [ "$#" -eq 3 ]
+	java -cp src/mapReduce.jar Main/Main $1
+elif [ "$#" -eq 4 ]
 then
-	echo "Running Client"
-	java -cp src/rmi.jar $1 $2 $3
+	java -cp src/mapReduce.jar Main/Main $1 $2 $3 $4
 else
 	echo "Invalid number of arguments supplied- read the documentation for detail"
 fi
