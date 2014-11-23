@@ -219,6 +219,7 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         for (String nodeID : output.keySet())
         {
             String filePath = path + nodeID + "/Output.txt";
+            System.out.println(filePath);
             FileOutputStream fos;
 			try {
 				fos = new FileOutputStream(filePath);

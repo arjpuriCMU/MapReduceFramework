@@ -18,7 +18,7 @@ public class WordCount {
 //		config.setInputFormat(WordInputFormat.class);
 //		config.setOutputFromat(WordOutputFormat.class);
 		config.setInputFile("./src/WordCount/TropicThunderQuote.txt");
-		config.setOutputFilePath("./WordCount");
+		config.setOutputFilePath("./");
 		File tropicThunder = new File("./src/WordCount/TropicThunderQuote.txt");
 		File[] files = new File[1];
 		files[0] = tropicThunder;
