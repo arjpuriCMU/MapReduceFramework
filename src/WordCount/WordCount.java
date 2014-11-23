@@ -16,14 +16,13 @@ public class WordCount {
 		MapReducerConfig config = new MapReducerConfig();
 		config.setMapperClass(WordCountMap.class);
 		config.setReducerClass(WordCountReduce.class);
-		config.setInputFile("./src/WordCount/TropicThunderQuote.txt");
 		config.setOutputFilePath(InternalConfig.DFS_STORAGE_PATH);
 		File tropicThunder = new File("./src/WordCount/TropicThunderQuote.txt");
 		File[] files = new File[1];
 		files[0] = tropicThunder;
 		MapReducerClient map_reducer = null;
 		try {
-			map_reducer = new MapReducerClient("WordcountClient",new Host("unix3.andrew.cmu.edu",8080)); //update to config file
+			map_reducer = new MapReducerClient("WordcountClient",new Host("unix3.andrew.cmu.edu",8080));
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}

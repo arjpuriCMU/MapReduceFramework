@@ -44,7 +44,7 @@ public class MapReducerClient {
     private MapReduceMasterInterface master;
     private String map_reducer_id;
     private HashSet<String> jobIDs;
-
+    String data_node_id;
     /*
        Constructor that connects to master node of MapReduce system.
        ParticipantID specifies the name of this user for future use.
@@ -60,7 +60,7 @@ public class MapReducerClient {
         master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
         
         /* Locate an already existing data node */
-        String data_node_id = null;
+        data_node_id = null;
         Set<String> all_node_ids = name_node.getNodeIds();
         ConcurrentHashMap<String,Host> data_node_hosts = name_node.getIdHostMap();
         for (String s : data_node_hosts.keySet()){
@@ -127,13 +127,13 @@ public class MapReducerClient {
 			}
 	    	try {
 	    		/*passes map_reducer_id to coordinate DFSNameNode file_buffer flushes to respective MapReducers */
-	    		name_node.bindFileFromByteArray(file.getName(),byte_array, jobID, this.map_reducer_id); 
+	    		name_node.bindFileFromByteArray(file.getName(),byte_array, jobID, this.data_node_id); 
 	    	} catch (RemoteException e) {
 				e.printStackTrace();
 			}
 		}
 		try {
-			file_ids = name_node.flushFilesToDataNodes(this.map_reducer_id);
+			file_ids = name_node.flushFilesToDataNodes(this.data_node_id);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

@@ -244,10 +244,8 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		for (String node_id : this.slave_dfsfile_buffer.keySet()){
-			for (DFSFile file : this.slave_dfsfile_buffer.get(node_id)){
-				file.getFile().delete();
-			}
+		for (DFSFile file: this.all_dfsFiles){
+			file.getFile().delete();
 		}
 		closeDataNodes();
 		FileFunctions.deleteDirectory(new File(InternalConfig.DFS_STORAGE_PATH)); /*Clears Scruf */
@@ -514,7 +512,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	 *name node to be distributed to the data nodes. 
 	 */
 	@Override
-	public void bindFileFromByteArray(String name,byte[] byte_array,String job_id,String map_reducer_id) throws RemoteException {
+	public void bindFileFromByteArray(String name,byte[] byte_array,String job_id,String datanode_id) throws RemoteException {
 		File file = new File(name);
 		FileOutputStream fos;
 		try {
@@ -530,33 +528,36 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		}
 		DFSFile new_dfs_file = new DFSFile(file,job_id); /*Construct dfs file with unique id */
 		this.fileID_byte_arr.put(new_dfs_file.getDFSFile_id(), byte_array);
+		this.all_dfsFiles.add(new_dfs_file);
 		/*Add to the buffer before partitioning. If hashmap already contains then append, else create new list 
 		 *This map stores which slaves sent which dfs file
 		 * */
-		if (this.slave_dfsfile_buffer.contains(map_reducer_id)){
-			this.slave_dfsfile_buffer.get(map_reducer_id).add(new_dfs_file);
+		if (this.slave_dfsfile_buffer.containsKey(datanode_id) == true){
+			List<DFSFile> buffer = this.slave_dfsfile_buffer.get(datanode_id);
+			buffer.add(new_dfs_file);
+			this.slave_dfsfile_buffer.put(datanode_id, buffer);
 		}
 		else{
 			List<DFSFile> buffer = new ArrayList<DFSFile>();
 			buffer.add(new_dfs_file);
-			this.slave_dfsfile_buffer.put(map_reducer_id,buffer);
+			this.slave_dfsfile_buffer.put(datanode_id,buffer);
 		}
+	
 	}
 
 	@Override
-	public Set<String> flushFilesToDataNodes(String map_reducer_id) {
-		this.all_dfsFiles.addAll(this.slave_dfsfile_buffer.get(map_reducer_id));
+	public Set<String> flushFilesToDataNodes(String datanode_id) {
 		try {
-			this.partitionAndDistributeFiles(this.slave_dfsfile_buffer.get(map_reducer_id));
+			this.partitionAndDistributeFiles(this.slave_dfsfile_buffer.get(datanode_id));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		/* Get all the file ids to return back to map reducer */
 		Set<String> file_ids = new HashSet<String>();
-		for (DFSFile dfs_file: this.slave_dfsfile_buffer.get(map_reducer_id)){
+		for (DFSFile dfs_file: this.slave_dfsfile_buffer.get(datanode_id)){
 			file_ids.add(dfs_file.getDFSFile_id());
 		}
-		this.slave_dfsfile_buffer.put(map_reducer_id,new ArrayList<DFSFile>());
+		this.slave_dfsfile_buffer.put(datanode_id,new ArrayList<DFSFile>());
 		return file_ids;
 	}
 	
