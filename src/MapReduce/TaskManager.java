@@ -12,6 +12,7 @@ import Util.Tuple;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -88,6 +89,7 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
 
     public synchronized void addJob(String jobID, Set<DFSBlock> dfsBlocks) throws RemoteException
     {
+    	
         /* Get Mapper and Reducer Classes */
     	JavaCustomClassLoader map_loader = new JavaCustomClassLoader(master.getClassMap().get(jobID).getFirst());
     	Class<?> mapper_class =
@@ -211,15 +213,23 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
 		}
     }
 
-    public void writeMROutput(ConcurrentHashMap<String,byte[]> output, String path) throws IOException
+    public void writeMROutput(ConcurrentHashMap<String,byte[]> output, String path)
     {
         /* Write each byte[] to a file on the given path */
         for (String nodeID : output.keySet())
         {
             String filePath = path + nodeID + "/Output.txt";
-            FileOutputStream fos = new FileOutputStream(filePath);
-            fos.write(output.get(nodeID));
-            fos.close();
+            FileOutputStream fos;
+			try {
+				fos = new FileOutputStream(filePath);
+				fos.write(output.get(nodeID));
+	            fos.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+            
         }
         System.out.println("Reduce output files have been written");
 

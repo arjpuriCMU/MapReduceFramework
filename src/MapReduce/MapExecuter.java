@@ -5,7 +5,6 @@ import IOFormat.MRCollector;
 
 import java.io.*;
 import java.util.*;
-import java.util.Map;
 
 /**
  * Created by karansharma on 11/19/14.
@@ -27,6 +26,7 @@ public class MapExecuter implements Runnable {
 
     public void run()
     {
+    	
         /* Check if Job Cancelled */
         if(taskManager.jobCancelled(jobID))
             return;

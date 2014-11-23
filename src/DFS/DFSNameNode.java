@@ -118,6 +118,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 	 */
 	public void moveBlocksFromInactive(){
 		System.out.println("Moving files from inactive dataNodes");
+		System.out.println("Master ->");
 		List<DFSBlock> unassociated_replica_blocks = new ArrayList<DFSBlock>();
 		List<String> active_nodes = getActiveNodes();
 		List<String> inactive_nodes = new ArrayList<String>();

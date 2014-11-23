@@ -17,9 +17,9 @@ public class WordCount {
 		config.setReducerClass(WordCountReduce.class);
 //		config.setInputFormat(WordInputFormat.class);
 //		config.setOutputFromat(WordOutputFormat.class);
-		config.setInputFile("./WordCount/TropicThunderQuote.txt");
+		config.setInputFile("./src/WordCount/TropicThunderQuote.txt");
 		config.setOutputFilePath("./WordCount");
-		File tropicThunder = new File("./WordCount/TropicThunderQuote.txt");
+		File tropicThunder = new File("./src/WordCount/TropicThunderQuote.txt");
 		File[] files = new File[1];
 		files[0] = tropicThunder;
 		MapReducerClient map_reducer = null;

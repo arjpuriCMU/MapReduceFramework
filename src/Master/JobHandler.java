@@ -54,6 +54,9 @@ public class JobHandler {
        for(String file_id : file_ids)
        {
            Set<DFSBlock> dfsBlocks = name_node.getFileIDBlockMap().get(file_id);
+           if (dfsBlocks == null){
+        	   System.out.println("blocks NULL :(");
+           }
            for(DFSBlock dfsBlock : dfsBlocks)
            {
                 String hostName = scheduler.selectReplica(jobID,dfsBlock);

@@ -119,7 +119,8 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	@Override
 	public void handshakeWithSlave(String participantID,String slave_id)
 			throws RemoteException {
-		System.out.println(slave_id + " added to master");
+		System.out.println(participantID + " added to master");
+		System.out.print("Master -> ");
 		slave_ids.add(participantID);
 		slave_id_datanode_id_map.put(participantID, slave_id);
 	}
@@ -172,7 +173,6 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 			} catch (RemoteException | NotBoundException e) {
 				e.printStackTrace();
 			}
-			System.out.print("Master -> ");
 		}
 	}
 	private void processCLInput(String[] args) throws RemoteException, NotBoundException {

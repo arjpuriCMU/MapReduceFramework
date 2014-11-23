@@ -102,6 +102,7 @@ public class DFSConnectionManager extends UnicastRemoteObject implements Runnabl
                     HealthMonitor health_monitor = (HealthMonitor) registry.lookup(InternalConfig.HEALTH_MONITOR_ID);
                     health_monitor.addNode(handshake_msg.getNodeId());
                     System.out.println("DataNode Id: " + handshake_msg.getNodeId() + " has started..");
+                    System.out.print("Master -> ");
                 }
                 data_node_socket.close();
                 input_stream.close();

@@ -9,6 +9,7 @@ public class WordCountMap implements Mapper {
 	public void map(String line, MRCollector mapperOutputCollector) {
 		String[] words = line.split(" ");
         for(String word : words) {
+        	System.out.println(word);
             mapperOutputCollector.addOutput(word, 1);
         }
 	}

@@ -14,8 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public interface TaskManagerInterface extends Remote {
     public void addJob(String jobID, Set<DFSBlock> dfsBlocks) throws RemoteException;
+    public void checkReduce(String jobID, String outFileName) throws RemoteException;
     public int taskLoad() throws RemoteException;
     public String getDataNodeID() throws RemoteException;
-    public int mapsLeft(String jobID);
-    public void writeMROutput(ConcurrentHashMap<String,byte[]> output, String path) throws IOException;
+    public void mapFailure(String jobID, String inputFilePath) throws RemoteException;
+    public void jobFailure(String jobID) throws RemoteException;
+    public boolean jobCancelled(String jobID) throws RemoteException;
+    public void reduceComplete(String jobId,String filePath) throws RemoteException;
+    public int mapsLeft(String jobID) throws RemoteException;
+    public void writeMROutput(ConcurrentHashMap<String,byte[]> output, String path) throws RemoteException;
 }
