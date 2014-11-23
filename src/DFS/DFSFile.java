@@ -5,11 +5,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+/*Wrapper of the input file that allows unique identification of file */
 public class DFSFile implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private File dfs_file;
 	private Map<Integer, DFSBlock> blockId_block_map;
 	private final String  DFSFile_id;
-	//add unique identifier to file..
 	public DFSFile(File f, String DFSFile_id){
 		dfs_file = f;
 		blockId_block_map = new HashMap<Integer,DFSBlock>();

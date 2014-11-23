@@ -27,6 +27,7 @@ import DFS.DFSConnectionManager;
 import DFS.DFSDataNode;
 import DFS.DFSFile;
 import DFS.DFSNameNode;
+import DFS.DFSNameNodeInterface;
 import DFS.DataNodeInterface;
 import DFS.HealthMonitor;
 import MapReduce.MapReducerConfig;
@@ -38,7 +39,6 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	
 	private static final long serialVersionUID = 1L;
 	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
-	private int port;
 	private Host name_node_host;
 	private Registry main_registry;
 	private DFSNameNode name_node;
@@ -53,10 +53,10 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	
 	public Master(int port) throws RemoteException{
 		slave_ids = new HashSet<String>();
+		/*Stores class files as byte[] to be sent to required taskManagers */
 		jobId_class_byte_array_map = new ConcurrentHashMap<String,Tuple<byte[],byte[]>>();
 		this.jobId_mapname_map = new ConcurrentHashMap<String,Tuple<String,String>>();
 		this.jobs = new ConcurrentHashMap<String,JobHandler>();
-		this.port = port;
 		try {
 			this.host = InetAddress.getLocalHost().getHostName();
 		} catch (UnknownHostException e2) {
@@ -67,6 +67,7 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		} catch (UnknownHostException e1) {
 			e1.printStackTrace();
 		}
+		/*Start name node */
 		System.out.println("NameNode being initiated.");
 		try {
 			main_registry = LocateRegistry.createRegistry(REGISTRY_PORT);
@@ -114,6 +115,7 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		return this.jobId_mapname_map;
 	}
 
+	/*Allows MapReducerClient to register itself with master */
 	@Override
 	public void handshakeWithSlave(String participantID,String slave_id)
 			throws RemoteException {
@@ -136,13 +138,7 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
         }
         JobHandler jobHandler = new JobHandler(jobID,host,outFilePath);
         jobs.put(jobID,jobHandler);
-        /*Ex. WordCount.WordCountMapper -> [WordCount,WordCountMapper] */
-        String[] mapper_name = (map_tuple.getFirst().split("\\."));
-		String[] reducer_name = (red_tuple.getFirst().split("\\."));
-		/* UPLOAD_PATH + WordCountMapper-asdfsa.class */
-		String map_path = ConfigSettings.UPLOAD_PATH + mapper_name[mapper_name.length-1] + "-" + jobID + ".class";
-		String reduce_path = ConfigSettings.UPLOAD_PATH + reducer_name[reducer_name.length-1] + "-" + jobID + ".class";
-		jobId_class_byte_array_map.put(jobID,new Tuple<byte[],byte[]>(map_class_byte_array,reduce_class_byte_array));
+        jobId_class_byte_array_map.put(jobID,new Tuple<byte[],byte[]>(map_class_byte_array,reduce_class_byte_array));
 		this.jobId_mapname_map.put(jobID, new Tuple<String,String>(map_tuple.getFirst(),red_tuple.getFirst()));
 		return jobID;
     }
@@ -171,37 +167,81 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 				this.name_node.quit();
 				System.exit(0);
 			}
-
-			processCLInput(args);
-			if (args[0].toLowerCase().equals("help" )){
+			try {
+				processCLInput(args);
+			} catch (RemoteException | NotBoundException e) {
+				e.printStackTrace();
 			}
+			System.out.print("Master -> ");
 		}
 	}
-	private void processCLInput(String[] args) {
+	private void processCLInput(String[] args) throws RemoteException, NotBoundException {
+		DFSNameNodeInterface name_node = (DFSNameNodeInterface) this.main_registry.lookup(InternalConfig.NAME_NODE_ID);
 		if (args[0].toLowerCase().equals("data_nodes?")){ //Display all running workers
+			System.out.println("DataNodes Present:");
+			System.out.println("----------------");
+			for (String node_id : name_node.getNodeIds()){
+				if (name_node.getIdActiveMap().get(node_id)){
+					System.out.print("ACTIVE: ");
+					System.out.println(node_id + " " + name_node.getIdHostMap().get(node_id).hostname);
+				}
+				else{
+					System.out.print("INACTIVE: ");
+					System.out.println(node_id + name_node.getIdHostMap().get(node_id).hostname);
+				}
 					
-		}
-		else if (args[0].toLowerCase().equals("files?")){
+			}
+			System.out.println("----------------");
 		}
 		
 		else if (args[0].toLowerCase().equals("file_blocks?")){
+			System.out.println("File Blocks Present:");
+			System.out.println("----------------");
+			for (Tuple<DFSFile,DFSBlock> tuple: name_node.getBlockHostMap().keySet()){
+				System.out.println(tuple.getFirst().getFile().getName() + " : " + tuple.getSecond().getBlockNumber());
+			}
+			System.out.println("----------------");
 		}
 
         /* Distributes Files */
+	
 		else if (args[0].toLowerCase().equals("datanode_health?")){
+			System.out.println("----------------");
+			try {
+				HealthMonitor health_monitor = (HealthMonitor) main_registry.lookup(InternalConfig.HEALTH_MONITOR_ID);
+				health_monitor.printAllHealth();
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			} catch (NotBoundException e) {
+				e.printStackTrace();
+			}
+			
+			System.out.println("----------------");
 
 		}
 		else if (args[0].toLowerCase().equals("host?")){
+			System.out.println("----------------");
+			try {
+				System.out.println(InetAddress.getLocalHost().getHostName());
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
+			System.out.println("----------------");
 
 		}
 	}
 
     /* returns String with job information */
-    public String getState(String jobID) throws Exception
+    public String getState(String jobID)
     {
         if(!jobs.containsKey(jobID))
             return "Not a valid JobID";
-        return jobs.get(jobID).getState();
+        try {
+			return jobs.get(jobID).getState();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "Unavailable";
     }
 
     /* Called by TaskManager to report job failure */
@@ -221,7 +261,5 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
         }
 
     }
-
-
 	
 }

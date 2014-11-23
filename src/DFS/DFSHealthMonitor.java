@@ -18,10 +18,6 @@ import Config.InternalConfig;
 
 public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, HealthMonitor {
 
-	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private static int HEARTBEAT_FREQUENCY = ConfigSettings.heartbeat_frequency;
 	private ConcurrentHashMap<String, Integer> node_health_map;
@@ -31,17 +27,19 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
 
 	
+	/*Stores inetAddress of NameNode to allow larger functionality */
 	public DFSHealthMonitor(List<String> node_ids, InetAddress inetAddress, int port) throws RemoteException{
 		nameNode_host = inetAddress; 
 		this.setPort(port);
 		this.node_ids = new HashSet<String>(node_ids);
-		this.node_health_map = new ConcurrentHashMap<String,Integer>();
-		addToRegistry();
+		this.node_health_map = new ConcurrentHashMap<String,Integer>(); /*Map from data node id to health */
+		addToRegistry(); /*Add this to Namenode registry */
 		initializeHealth();
 		
 		
 	}
 
+	/*Registers the data Node ID with the health monitor */
 	@Override
 	public void addNode(String node) throws RemoteException{
 		node_ids.add(node);
@@ -60,6 +58,9 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 		
 	}
 	
+	/*Datanode heartbeat helpers will call this to send hearbeat pulse
+	 *Health is stabilized with a mathematical cancellation of positive and negative changes/
+	 */
 	@Override
 	public void changeHeartbeat(String node_id, Integer val) throws RemoteException{
 		try{
@@ -71,6 +72,7 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 		}
 	}
 	
+	/* Health Monitor calls this to reduce health of all datanodes */
 	@Override
 	public void changeHeartbeats(Integer val) throws RemoteException{
 		for (String node_id: node_ids){
@@ -78,10 +80,12 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 		}
 	}
 
+	/*Periodically called to see if any data nodes are below 0 health*/
 	private List<String> findInactiveNodes() {
 		List<String> dead_nodes = new ArrayList<String>();
 		for (String node_id: node_ids){
 			if (node_health_map.get(node_id) <=0){
+				/*Datanodes require removal from system */
 				dead_nodes.add(node_id);
 			}
 		}
@@ -112,9 +116,11 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 		}
 	}
 
+	/*Removal of all inactive data nodes from the system */
 	private void removeInactiveNodes(List<String> dead_node_ids) {
 		Registry registry = null;
 		try {
+			/*Notifies NameNode to remove data node from system */
 			registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, REGISTRY_PORT);
 			DFSNameNodeInterface name_node = (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
 			for (int i = 0; i < dead_node_ids.size(); i++){
@@ -134,6 +140,10 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 	@Override
 	public void run() {
 		List<String> dead_node_ids;
+		/*Periodically updates health of datanodes. Reduces health to penalize datanodes that are not
+		 * sending heartbeats. A hearbeat from the datanode will increment health by given amount.
+		 * See DataNodeHeartbeatHelper for function call.
+		 */
 		while (true){
 			try{
 				changeHeartbeats(-20);

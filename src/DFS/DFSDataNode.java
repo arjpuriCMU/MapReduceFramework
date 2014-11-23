@@ -9,10 +9,8 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.rmi.AccessException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -22,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import Config.InternalConfig;
-import Master.MapReduceMasterInterface;
 import Messages.Handshake;
 import Util.FileFunctions;
 import Util.Tuple;
@@ -36,12 +33,11 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 	public InetAddress name_node_host;
 	public int port;
 	public boolean active;
-	public final String STORAGE_PATH = InternalConfig.DFS_STORAGE_PATH;
+	public final String STORAGE_PATH = InternalConfig.DFS_STORAGE_PATH; /*Central DFS storage path */
 	public String data_nodeId;
-	public HashMap<String, List<DFSBlock>> file_block_replicas_map; 
-	public HashMap<Tuple<String,Integer>,File> block_file_map;
+	public HashMap<String, List<DFSBlock>> file_block_replicas_map;  /*Maps a file to corresponding replicas */
+	public HashMap<Tuple<String,Integer>,File> block_file_map; /*Maps the file ID and block no. to file */
 	private String store_path;
-	private int health = 100;
 	private final int REGISTRY_PORT = InternalConfig.REGISTRY_PORT;
 	private String data_node_host;
 	private Registry registry;
@@ -70,7 +66,8 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 	public String getNodeId(){
 		return this.data_nodeId;
 	}
-	
+
+	/*Safe exit of DataNode- called by NameNode */
 	public void exitDataNode(){
 		Registry registry;
 		try {
@@ -101,7 +98,6 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		return this.data_node_host;
 	}
 	
-	@SuppressWarnings("resource")
 	public void start(){
 		System.out.println("DFSDataNode ID " + this.data_nodeId + " is starting...");
 		/*Handshake with the Connection manager to register node Id with the master */
@@ -118,16 +114,14 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		registry = null;
 		int free_port;
 		try {
+			/* Creates a DataNode Registry and adds itself to it */
 			Registry name_node_registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, REGISTRY_PORT);
 			DFSNameNodeInterface name_node= (DFSNameNodeInterface) name_node_registry.lookup(InternalConfig.NAME_NODE_ID);
-			free_port = name_node.getFreeRegistryPort();
-			
+			free_port = name_node.getFreeRegistryPort(); /*Locate a free port for data node to connect to */
 			registry = LocateRegistry.createRegistry(free_port);
 			registry.bind(this.data_nodeId, this);
-			name_node.addDataNodeRegistryInfo(this.data_nodeId, new Tuple<String,Integer>(InetAddress.getLocalHost().getHostName(),free_port));
-//			System.setProperty("java.rmi.server.hostname", master.getMasterHost());
-////			master.proxyBindDataNode(this.data_nodeId, this);
-////			registry.bind(this.data_nodeId, this);
+			name_node.addDataNodeRegistryInfo(this.data_nodeId, 
+					new Tuple<String,Integer>(InetAddress.getLocalHost().getHostName(),free_port));
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		} catch (NotBoundException e) {
@@ -144,6 +138,7 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 	private void startHeartbeat() {
 		DataNodeHeartbeatHelper heartbeat_helper = null;
 		try {
+			/*Creates a separate thread to control heartbeat communication to health monitor */
 			heartbeat_helper = new DataNodeHeartbeatHelper(this.data_nodeId, name_node_host.getHostName(), port);
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -154,10 +149,10 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 	}
 	
 
+	/*NameNode calls this through RMI to store file replica on data node from a byte array */
 	public void initiateBlock(byte[] byte_array, DFSBlock file_block, String dfsfile_id) {
 		System.out.println("DFSFile_Id: " + dfsfile_id + " file block: " + file_block.getLocalBlockPath() +"recieved");
 		File block_file = new File(file_block.getHostBlockPath(this.data_nodeId));
-		int bytesRead;
 		FileOutputStream fos;
 		/*Store the block locally on the data node */
 		try {

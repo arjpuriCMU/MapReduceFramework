@@ -11,6 +11,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashSet;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,7 +35,7 @@ import Util.Tuple;
  */
 public class MapReducerClient {
 
-	//TO DO:
+	//TODO:
 	//Make the user put text files and stuff into the files directory
 	
     private DFSDataNode data_node;
@@ -100,12 +101,11 @@ public class MapReducerClient {
 		String classAsPath_reduce = reduce_name.replace('.', '/') + ".class";
 		InputStream stream1 = reduce_class.getClassLoader().getResourceAsStream(classAsPath_reduce);
 		byte[] reduce_class_byte_array = FileFunctions.toByteArray(stream1);
-		
-		/*TODO second argument must be local host of map reducer */
-		/* last argument is path of the output */
-        String jobID = master.createJob(map_reducer_id,config,map_class_byte_array,reduce_class_byte_array,map_tuple,red_tuple);
+		/* Create the job on the master and print out jobID for programmer to monitor */
+        String jobID = master.createJob(map_reducer_id,InetAddress.getLocalHost().getHostName(),
+        		config,map_class_byte_array,reduce_class_byte_array,map_tuple,red_tuple, config.getOutputFilePath());
         Set<String> file_ids = SendFilesToNameNode(jobID, files);
-        
+        System.out.println("Starting job: JobID = " + jobID);
         master.startJob(jobID,file_ids,config);
         jobIDs.add(jobID);
     }
@@ -115,6 +115,7 @@ public class MapReducerClient {
 		for (File file : files){
 			byte[] byte_array = new byte[(int) file.length()]; //assume that file is always small enough to fit
 			FileInputStream fis;
+			/*read the input file and convert to byte array for name node */
 			try {
 				fis = new FileInputStream(file);
 				BufferedInputStream bis = new BufferedInputStream(fis);
@@ -145,6 +146,30 @@ public class MapReducerClient {
 
 	public void setMap_reducer_id(String map_reducer_id) {
 		this.map_reducer_id = map_reducer_id;
+	}
+
+	/*Starts a client interface for programmers to monitor progress of jobs */
+	public void startInterface() {
+		System.out.println("Starting " + this.map_reducer_id + " interface...");
+		Scanner scanner = new Scanner(System.in);
+		String usrInput;
+		String[] args;
+        /* Command Line Shell for client */
+		while(true){
+			System.out.print(this.map_reducer_id+ " -> ");
+			usrInput = scanner.nextLine();
+			args = usrInput.split(" ");
+			if (args[0].toLowerCase().equals("job_details" )){
+				try {
+					/*Get the state of the job */
+					String state = master.getState(args[1]);
+					System.out.println(state);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
 	}
 
     

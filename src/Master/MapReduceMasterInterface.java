@@ -23,7 +23,8 @@ public interface MapReduceMasterInterface extends Remote {
     public void setName_node_host(Host name_node_host) throws RemoteException;
     public void start() throws RemoteException;
 	public String getMasterHost() throws RemoteException;
-    public void jobFailure(String jobID, String dataNodeID);
-    public void jobCompleted(String jobID, String nodeID, byte[] output);
+    public void jobFailure(String jobID, String dataNodeID) throws RemoteException;
+    public void jobCompleted(String jobID, String nodeID, byte[] output) throws RemoteException;
+    public String getState(String jobID) throws RemoteException;
 
 }

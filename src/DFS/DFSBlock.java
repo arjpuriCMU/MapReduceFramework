@@ -20,17 +20,20 @@ public class DFSBlock implements Serializable {
 	
 	public DFSBlock(String file_name, String file_id, int block_no, Tuple<Integer,Integer> range, Set<Host> replica_hosts){
 		this.block_no = block_no;
-		this.block_range = range;
+		this.block_range = range; /* Stores the range of lines that this block contains */
 		this.replica_hosts = replica_hosts;
-		this.file_name = file_name;
-		this.file_id = file_id;
+		this.file_name = file_name; /* The file that this block corresponds to */
+		this.file_id = file_id; /* The DFS file id that this block corresponds to */
 	}
+	
+	/*Used when working in NameNode prior to distribution */
 	public String getLocalBlockPath(){
 		String file_name_no_ext = this.file_name.replaceFirst("[.][^.]+$", "");
 		String ext = FileFunctions.getFileExtension(this.file_name);
 		return STORAGE_PATH + file_name_no_ext + "_" + block_no + ext;
 	}
 	
+	/*Used on the respective DataNodes */
 	public String getHostBlockPath(String dataNode_id){
 		String file_name_no_ext = this.file_name.replaceFirst("[.][^.]+$", "");
 		String ext = FileFunctions.getFileExtension(this.file_name);
@@ -44,7 +47,6 @@ public class DFSBlock implements Serializable {
 	public String getFileName(){
 		return this.file_name;
 	}
-	
 	
 	
 	public int getBlockNumber(){
@@ -66,6 +68,8 @@ public class DFSBlock implements Serializable {
 	public Tuple<Integer,Integer> getBlockRange(){
 		return this.block_range;
 	}
+	
+	/*Used to establish replica numbers for testing purposes ONLY */
 	public String getCustomPath(int replica_no) {
 		String file_name_no_ext = this.file_name.replaceFirst("[.][^.]+$", "");
 		String ext = FileFunctions.getFileExtension(this.file_name);
@@ -75,6 +79,13 @@ public class DFSBlock implements Serializable {
 	public int hashCode(){
 		return this.file_name.hashCode() + this.block_no;
 		
+	}
+	public String getFile_id() {
+		return file_id;
+	}
+
+	public void setFile_id(String file_id) {
+		this.file_id = file_id;
 	}
 	
 }

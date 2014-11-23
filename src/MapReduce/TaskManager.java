@@ -163,7 +163,11 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
 
             /* Return if too many Failures */
             if(lastCount >= failureThreshold) {
-                master.jobFailure(jobID,dataNodeID);
+                try {
+					master.jobFailure(jobID,dataNodeID);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
                 return;
             }
         }
@@ -175,7 +179,11 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
 
     public void jobFailure(String jobID)
     {
-        master.jobFailure(jobID,dataNodeID);
+        try {
+			master.jobFailure(jobID,dataNodeID);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
     }
 
     public boolean jobCancelled(String jobID)
@@ -196,7 +204,11 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         catch (Exception e) {
             jobFailure(jobId);
         }
-        master.jobCompleted(jobId,dataNodeID,bytes);
+        try {
+			master.jobCompleted(jobId,dataNodeID,bytes);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
     }
 
     public void writeMROutput(ConcurrentHashMap<String,byte[]> output, String path) throws IOException

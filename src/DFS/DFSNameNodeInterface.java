@@ -28,7 +28,6 @@ public interface DFSNameNodeInterface extends Remote {
 	public void bindFileFromByteArray(String string, byte[] byte_array, String job_id, String mapreducer_id) throws RemoteException;
 	public Set<String> flushFilesToDataNodes(String map_reducer_id) throws RemoteException;
     public ConcurrentHashMap<String,Set<DFSBlock>> getFileIDBlockMap() throws RemoteException;
-	public boolean fileExists(String input_file) throws RemoteException;
 	public void quit() throws RemoteException;
 	public int getFreeRegistryPort() throws RemoteException;
 	public void addDataNodeRegistryInfo(String data_nodeId,
@@ -36,5 +35,6 @@ public interface DFSNameNodeInterface extends Remote {
 	public ConcurrentHashMap<String,Tuple<String,Integer>> getDataNodeRegistryInfo() throws RemoteException;
 	public int getPort() throws RemoteException;
 	public Set<String> getNodeIds() throws RemoteException;
+	public ConcurrentHashMap<Tuple<DFSFile,DFSBlock>, String> getBlockHostMap() throws RemoteException;
 
 }

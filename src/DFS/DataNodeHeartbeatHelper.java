@@ -62,6 +62,7 @@ public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runn
 	public void run() {
 		Registry registry;
 		HealthMonitor health_monitor = null;
+		/* Get the health monitor from the master RMI registry to send heartbeat */
 		try {
 			registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, REGISTRY_PORT);
 			health_monitor =  (HealthMonitor) registry.lookup(InternalConfig.HEALTH_MONITOR_ID);
@@ -70,8 +71,10 @@ public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runn
 		} catch (NotBoundException e) {
 			e.printStackTrace();
 		}
+		
 		while (active){
 			try {
+				/*Send heartbeat to health monitor at 'heartbeat_frequency' frequency */
 				health_monitor.changeHeartbeat(node_id,20);
 				Thread.sleep(ConfigSettings.heartbeat_frequency*1000);
 			} catch (RemoteException e) {
@@ -82,5 +85,21 @@ public class DataNodeHeartbeatHelper extends UnicastRemoteObject implements Runn
 			
 		}
 		return;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
 	}
 }

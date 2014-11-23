@@ -12,6 +12,7 @@ import Master.Master;
 public class Main {
 	public static void main(String[] args) throws IOException, ClassNotFoundException{
 		Master master = null;
+		/*Creates the master node */
 		if (args.length == 1){
 			int input_port = Integer.parseInt(args[0]);
 			master = new Master(input_port);
@@ -19,6 +20,7 @@ public class Main {
 			InternalConfig.MASTER_HOSTNAME = master_hostname;
 			master.start();
 		}
+		/*Creates the datanode */
 		else if (args.length == 4){ 
 			if (args[0].toLowerCase().equals("-d")){
 				System.out.println("Creating Data Node...");

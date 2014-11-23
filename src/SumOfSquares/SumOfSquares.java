@@ -12,7 +12,7 @@ public class SumOfSquares {
 		MapReducerConfig config = new MapReducerConfig();
 		config.setMapperClass(SumOfSquaresMap.class);
 		config.setReducerClass(SumOfSquaresReduce.class);
-		config.setOutputFile("WCOutput");
+		config.setOutputFilePath("./SumOfSquares");
 		File squares1 = new File("./SumOfSquares/squares1.txt");
 		File squares2 = new File("./SumOfSquares/squares2.txt");
 		File[] files = new File[2];
@@ -26,6 +26,7 @@ public class SumOfSquares {
 		}
 		try {
 			map_reducer.runJob(config, files);
+			map_reducer.startInterface();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
