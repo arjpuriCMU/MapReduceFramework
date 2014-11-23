@@ -9,9 +9,6 @@ import Util.FileFunctions;
 import Util.Host;
 import Util.Tuple;
 
-/**
- * Created by karansharma on 11/15/14.
- */
 public class WordCount {
 
 	public static void main(String[] args) throws IOException{

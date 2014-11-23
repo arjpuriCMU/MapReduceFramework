@@ -88,7 +88,6 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
 
     public synchronized void addJob(String jobID, Set<DFSBlock> dfsBlocks) throws RemoteException
     {
-    	
         /* Get Mapper and Reducer Classes */
     	JavaCustomClassLoader map_loader = new JavaCustomClassLoader(master.getClassMap().get(jobID).getFirst());
     	Class<?> mapper_class =
@@ -205,11 +204,12 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         /* Write each byte[] to a file on the given path */
         for (String nodeID : output.keySet())
         {
-            String filePath = path + nodeID + "Output.txt";
+            String filePath = path + nodeID + "/Output.txt";
             FileOutputStream fos = new FileOutputStream(filePath);
             fos.write(output.get(nodeID));
             fos.close();
         }
+        System.out.println("Reduce output files have been written");
 
     }
 }

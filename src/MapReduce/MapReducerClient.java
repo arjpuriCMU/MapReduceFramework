@@ -71,9 +71,7 @@ public class MapReducerClient {
     
         /* Construct and Start DFS dataNode layer (local) */
         InetAddress inet = InetAddress.getByName(name_node.getHost().getHostName());
-//        String data_node_id = InternalConfig.generateDataNodeId(participantID);
-//        data_node = new DFSDataNode(data_node_id, inet, master_host.port);
-//        data_node.start();
+
         if (data_node_id == null){
         	throw new RuntimeException ("Must run a job from a machine already existing on the system");
         }
@@ -103,6 +101,8 @@ public class MapReducerClient {
 		InputStream stream1 = reduce_class.getClassLoader().getResourceAsStream(classAsPath_reduce);
 		byte[] reduce_class_byte_array = FileFunctions.toByteArray(stream1);
 		
+		/*TODO second argument must be local host of map reducer */
+		/* last argument is path of the output */
         String jobID = master.createJob(map_reducer_id,config,map_class_byte_array,reduce_class_byte_array,map_tuple,red_tuple);
         Set<String> file_ids = SendFilesToNameNode(jobID, files);
         
