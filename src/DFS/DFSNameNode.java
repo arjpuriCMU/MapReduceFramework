@@ -222,7 +222,11 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+		for (String node_id : this.slave_dfsfile_buffer.keySet()){
+			for (DFSFile file : this.slave_dfsfile_buffer.get(node_id)){
+				file.getFile().delete();
+			}
+		}
 		closeDataNodes();
 		FileFunctions.deleteDirectory(new File(InternalConfig.DFS_STORAGE_PATH));
 		try {
@@ -620,16 +624,10 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		for (DFSFile dfs_file: this.slave_dfsfile_buffer.get(map_reducer_id)){
 			file_ids.add(dfs_file.getDFSFile_id());
 		}
-		delete_buffer_files(map_reducer_id);
 		this.slave_dfsfile_buffer.put(map_reducer_id,new ArrayList<DFSFile>());
 		return file_ids;
 	}
 	
-	/* TODO delete files if created on name node directory */
-	private void delete_buffer_files(String map_reducer_id) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public boolean fileExists(String input_file) throws RemoteException {

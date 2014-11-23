@@ -32,7 +32,7 @@ import Util.Tuple;
  * MapReducer object which will have a dataNode utilized for other active
  * jobs in the system.
  */
-public class MapReducer {
+public class MapReducerClient {
 
 	//TO DO:
 	//Make the user put text files and stuff into the files directory
@@ -48,7 +48,7 @@ public class MapReducer {
        Constructor that connects to master node of MapReduce system.
        ParticipantID specifies the name of this user for future use.
      */
-    public MapReducer(String participantID, Host master_host) throws Exception {
+    public MapReducerClient(String participantID, Host master_host) throws Exception {
     	this.setMap_reducer_id(participantID);
     	jobIDs = new HashSet<String>();
     	InternalConfig.REGISTRY_HOST = master_host.hostname;
@@ -68,8 +68,7 @@ public class MapReducer {
         	}
         }
 
-        System.out.println(InetAddress.getLocalHost().getHostAddress());
-        System.out.println(data_node_id);
+    
         /* Construct and Start DFS dataNode layer (local) */
         InetAddress inet = InetAddress.getByName(name_node.getHost().getHostName());
 //        String data_node_id = InternalConfig.generateDataNodeId(participantID);

@@ -27,15 +27,15 @@ CLASSES = \
 	Messages/Heartbeat.java \
 	Messages/Message.java \
 	MapReduce/MapReduceInterface.java \
-	MapReduce/MapReducer.java \
+	MapReduce/MapReducerClient.java \
 	MapReduce/Map.java \
 	MapReduce/MapExecuter.java \
 	MapReduce/Mapper.java \
 	MapReduce/MapReducerConfig.java \
 	MapReduce/ReduceExecuter.java \
 	MapReduce/Reducer.java \
-	MapReduce/TaskManager.java \
-	MapReduce/TaskManagerInterface.java \
+	MapReduce/MapReduceSlave.java \
+	MapReduce/MapReduceSlaveInterface.java \
 	Master/Master.java \
 	Master/JobHandler.java \
 	Master/MapReduceMasterInterface.java \
@@ -67,16 +67,16 @@ RMCLASSES = \
 	IOFormat/KeyValuePair.class \
 	IOFormat/MapperCollector.class \
 	IOFormat/ReducerCollector.class \
+	MapReduce/MapReducerClient.java \
 	MapReduce/Map.class \
 	MapReduce/MapReduceInterface.class \
-	MapReduce/MapReducer.class \
+	MapReduce/TaskManager.class \
+	MapReduce/TaskManagerInterface.class \
 	MapReduce/MapExecuter.class \
 	MapReduce/Mapper.class \
 	MapReduce/MapReducerConfig.class \
 	MapReduce/ReduceExecuter.class \
 	MapReduce/Reducer.class \
-	MapReduce/TaskManager.class \
-	MapReduce/TaskManagerInterface.class \
 	Main/Main.class \
 	Master/Master.class \
 	Master/MapReduceMasterInterface.class \
