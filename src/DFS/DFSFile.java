@@ -14,7 +14,7 @@ public class DFSFile implements Serializable {
 	public DFSFile(File f, String DFSFile_id){
 		dfs_file = f;
 		blockId_block_map = new HashMap<Integer,DFSBlock>();
-		this.DFSFile_id = DFSFile_id;
+		this.DFSFile_id = DFSFile_id + f.getName();
 		
 	}
 	public File getFile(){

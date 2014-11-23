@@ -1,3 +1,5 @@
+
+
 if [ "$#" -eq 2 ]
 then
 	java -cp src/mapReduce.jar Main/Main $1 $2

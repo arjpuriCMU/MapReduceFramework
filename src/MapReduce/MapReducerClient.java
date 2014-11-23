@@ -105,7 +105,6 @@ public class MapReducerClient {
         String jobID = master.createJob(map_reducer_id,InetAddress.getLocalHost().getHostName(),
         		config,map_class_byte_array,reduce_class_byte_array,map_tuple,red_tuple, config.getOutputFilePath());
         Set<String> file_ids = SendFilesToNameNode(jobID, files);
-        System.out.println("Starting job: JobID = " + jobID);
         master.startJob(jobID,file_ids,config);
         jobIDs.add(jobID);
     }
