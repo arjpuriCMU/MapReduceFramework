@@ -122,17 +122,19 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		slave_id_datanode_id_map.put(participantID, slave_id);
 	}
 
-    /* TODO: figure out how to pass jar file */
     /* Creates JobHandler */
-    public String createJob(String participantID,MapReducerConfig config, byte[] map_class_byte_array, 
-    		byte[] reduce_class_byte_array, Tuple<String, String> map_tuple, Tuple<String, String> red_tuple){
+    public String createJob(String participantID, String host, MapReducerConfig config,
+                            byte[] map_class_byte_array, byte[] reduce_class_byte_array,
+                            Tuple<String, String> map_tuple, Tuple<String, String> red_tuple,
+                            String outFilePath) throws RemoteException
+    {
         String jobID = participantID + config;
         
         while(jobs.containsKey(jobID))
         {
             jobID+= "0";
         }
-        JobHandler jobHandler = new JobHandler(jobID);
+        JobHandler jobHandler = new JobHandler(jobID,host,outFilePath);
         jobs.put(jobID,jobHandler);
         /*Ex. WordCount.WordCountMapper -> [WordCount,WordCountMapper] */
         String[] mapper_name = (map_tuple.getFirst().split("\\."));
@@ -158,7 +160,6 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 		Scanner scanner = new Scanner(System.in);
 		String usrInput;
 		String[] args;
-        /* TODO: NameNode launched from Master in foreground so may infinite loop */
         /* Command Line Shell for NameNode */
 		while(true){
 			System.out.print("Master -> ");
@@ -211,7 +212,14 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 
     /* Called by TaskManager to report job completion */
     public void jobCompleted(String jobID, String nodeID, byte[] output) {
-        jobs.get(jobID).nodeCompleted(nodeID,output);
+        try {
+            jobs.get(jobID).nodeCompleted(nodeID,output);
+        }
+        catch (Exception e)
+        {
+            jobFailure(jobID,nodeID);
+        }
+
     }
 
 

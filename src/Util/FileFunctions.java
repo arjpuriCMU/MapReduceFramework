@@ -107,19 +107,7 @@ public class FileFunctions {
         return output.toByteArray();
     }
 
-    /*
-        TODO: Write function to be able to get key and value (stored as strings)
-        for a the current line number. This will be utilized for the reduce
-        function. For now wait until implementing the reducer on a slave node
-        then come back to this
-     */
-    public static Tuple<String,String> returnKeyValue(File file){
 
-        //BufferedReader br = new BufferedReader(new FileReader(file));
-        return null;
-
-    }
-    
     public static int countLines(String filename) throws IOException {
     	BufferedReader reader = new BufferedReader(new FileReader(filename));
     	int lines = 0;

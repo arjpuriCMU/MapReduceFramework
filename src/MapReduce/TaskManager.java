@@ -12,6 +12,8 @@ import Util.Tuple;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
@@ -196,5 +198,18 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
             jobFailure(jobId);
         }
         master.jobCompleted(jobId,dataNodeID,bytes);
+    }
+
+    public void writeMROutput(ConcurrentHashMap<String,byte[]> output, String path) throws IOException
+    {
+        /* Write each byte[] to a file on the given path */
+        for (String nodeID : output.keySet())
+        {
+            String filePath = path + nodeID + "Output.txt";
+            FileOutputStream fos = new FileOutputStream(filePath);
+            fos.write(output.get(nodeID));
+            fos.close();
+        }
+
     }
 }

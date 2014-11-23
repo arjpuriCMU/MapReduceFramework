@@ -12,9 +12,5 @@ public class WordCountMap implements Mapper {
             mapperOutputCollector.addOutput(word, 1);
         }
 	}
-	
-	public void sex(){
-		System.out.println("sexysexy");
-	}
 
 }

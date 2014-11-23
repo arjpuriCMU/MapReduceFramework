@@ -28,14 +28,19 @@ public class JobHandler {
    private HashMap<String,TaskManagerInterface> taskManagers;
    private HashSet<String> failedNodes;
    private ConcurrentHashMap<String,byte[]> reduceOutputs;
+   private String callerHost;
+   private String outFilePath;
 
-   public JobHandler(String jobID)
+
+   public JobHandler(String jobID, String callerHost, String outFilePath)
    {
        this.jobID = jobID;
        partitions = new HashMap<>();
        taskManagers = new HashMap<>();
        failedNodes = new HashSet<>();
        reduceOutputs = new ConcurrentHashMap<>();
+       this.callerHost = callerHost;
+       this.outFilePath = outFilePath;
    }
 
    public void start(Set<String> file_ids) throws Exception{
@@ -77,7 +82,8 @@ public class JobHandler {
 
 		   /*Get the data node registry */
     	   Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
-    	   TaskManagerInterface taskManagerInterface = (TaskManagerInterface) data_node_registry.lookup(InternalConfig.generateTaskManagerId(host));
+    	   TaskManagerInterface taskManagerInterface = (TaskManagerInterface)
+                   data_node_registry.lookup(InternalConfig.generateTaskManagerId(host));
     	   taskManagerInterface.addJob(jobID,partitions.get(host));
            taskManagers.put(host,taskManagerInterface);
        }
@@ -132,7 +138,7 @@ public class JobHandler {
         failedNodes.add(nodeID);
     }
 
-    public synchronized void nodeCompleted(String nodeID, byte[] output)
+    public synchronized void nodeCompleted(String nodeID, byte[] output) throws Exception
     {
         /* Store reduce output */
         reduceOutputs.put(nodeID,output);
@@ -140,6 +146,17 @@ public class JobHandler {
         /* Check if Job Complete */
         if (reduceOutputs.size() == partitions.size())
         {
+            String registry_host = name_node.getDataNodeRegistryInfo().get(nodeID).getFirst();
+            int registry_port = name_node.getDataNodeRegistryInfo().get(nodeID).getSecond();
+
+		    /*Get the data node registry */
+            Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
+            TaskManagerInterface taskManagerInterface = (TaskManagerInterface)
+                    data_node_registry.lookup(InternalConfig.generateTaskManagerId(callerHost));
+
+
+            /* Tell TaskManager to write files */
+            taskManagerInterface.writeMROutput(reduceOutputs,outFilePath);
 
         }
     }

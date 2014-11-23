@@ -83,7 +83,6 @@ public class MapReducerClient {
     	master.handshakeWithSlave(participantID,data_node_id);
     }
 
-    //TODO: Jar file containing MapReduceInterface
     public void runJob(MapReducerConfig config, File[] files) throws Exception {
     	String mapper_name = config.getMapperClass().getName();
 		String reducer_name = config.getReducerClass().getName();

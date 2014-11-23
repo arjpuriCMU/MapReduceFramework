@@ -135,7 +135,6 @@ public class DFSDataNode extends UnicastRemoteObject implements DataNodeInterfac
 		} catch (AlreadyBoundException e) {
 			e.printStackTrace();
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		FileFunctions.createDirectory(store_path);
