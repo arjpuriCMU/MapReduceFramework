@@ -26,6 +26,8 @@ public class ReduceExecuter implements Runnable {
 
     public void run()
     {
+        System.out.println("Reducing Locally");
+
         /* Merge Map Output to single Map */
         BufferedReader br = null;
         SortedMap<String,ArrayList<String>> mergedMapOutput = new TreeMap<String,ArrayList<String>>();

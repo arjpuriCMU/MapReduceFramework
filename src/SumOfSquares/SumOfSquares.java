@@ -21,7 +21,7 @@ public class SumOfSquares {
 		files[1] = squares2;
 		MapReducerClient map_reducer = null;
 		try {
-			map_reducer = new MapReducerClient("SumOfSquaresClient",new Host("Arjuns-MacBook-Pro-2.local",8080)); //update to config file
+			map_reducer = new MapReducerClient("SumOfSquaresClient",new Host("unix3.andrew.cmu.edu",8080)); //update to config file
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}

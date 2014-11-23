@@ -26,10 +26,14 @@ public class MapExecuter implements Runnable {
 
     public void run()
     {
-    	
+        System.out.println("Mapping File: " + inputFilePath);
+
         /* Check if Job Cancelled */
         if(taskManager.jobCancelled(jobID))
+        {
+            System.out.println("Map Failed");
             return;
+        }
 
         /* READ AND MAP */
 

@@ -39,10 +39,10 @@ import java.util.concurrent.Future;
 public class TaskManager extends UnicastRemoteObject implements Runnable,TaskManagerInterface{
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	public String dataNodeID;
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    public String dataNodeID;
     public int cores;
     private int load;
     public ConcurrentHashMap<String, Integer> mapsLeft;
@@ -71,18 +71,18 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         /* Master registry */
         registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST,InternalConfig.REGISTRY_PORT);
         try {
-        	master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
+            master = (MapReduceMasterInterface) registry.lookup(InternalConfig.MAP_REDUCE_MASTER_ID);
         	/*Get the name node from the central registry */
-        	DFSNameNodeInterface name_node = (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
+            DFSNameNodeInterface name_node = (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
         	/* Get the corresponding data node's registry info */
-        	String registry_host = name_node.getDataNodeRegistryInfo().get(dataNodeID).getFirst();
-			int registry_port = name_node.getDataNodeRegistryInfo().get(dataNodeID).getSecond();
+            String registry_host = name_node.getDataNodeRegistryInfo().get(dataNodeID).getFirst();
+            int registry_port = name_node.getDataNodeRegistryInfo().get(dataNodeID).getSecond();
 			/*Get the data node registry */
-			Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
-			current_data_node = (DataNodeInterface) data_node_registry.lookup(dataNodeID);
+            Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
+            current_data_node = (DataNodeInterface) data_node_registry.lookup(dataNodeID);
 			/*bind task manager to data node's registry */
-			data_node_registry.bind(InternalConfig.generateTaskManagerId(current_data_node.getHostName()), this);
-		} catch (Exception e1) {
+            data_node_registry.bind(InternalConfig.generateTaskManagerId(current_data_node.getHostName()), this);
+        } catch (Exception e1) {
             e1.printStackTrace();
         }
     }
@@ -91,13 +91,13 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
     {
     	
         /* Get Mapper and Reducer Classes */
-    	JavaCustomClassLoader map_loader = new JavaCustomClassLoader(master.getClassMap().get(jobID).getFirst());
-    	Class<?> mapper_class =
-    			map_loader.findClass(master.getClassNameMap().get(jobID).getFirst());
-    	JavaCustomClassLoader reduce_loader = new JavaCustomClassLoader(master.getClassMap().get(jobID).getSecond());
-    	Class<?> reducer_class = reduce_loader.findClass(master.getClassNameMap().get(jobID).getSecond());
-    	Mapper mapper = null;
-    	Reducer reducer = null;
+        JavaCustomClassLoader map_loader = new JavaCustomClassLoader(master.getClassMap().get(jobID).getFirst());
+        Class<?> mapper_class =
+                map_loader.findClass(master.getClassNameMap().get(jobID).getFirst());
+        JavaCustomClassLoader reduce_loader = new JavaCustomClassLoader(master.getClassMap().get(jobID).getSecond());
+        Class<?> reducer_class = reduce_loader.findClass(master.getClassNameMap().get(jobID).getSecond());
+        Mapper mapper = null;
+        Reducer reducer = null;
 
         try {
             /* Instantiate and store mapper and reducers */
@@ -109,14 +109,17 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
             e.printStackTrace();
         }
 
+        System.out.println("Job " + jobID + " has " + dfsBlocks.size() + "maps");
+        mapsLeft.put(jobID,dfsBlocks.size());
+        mapOutputFiles.put(jobID,new HashSet<String>());
+        failureCounts.put(jobID,0);
+
         /* Add map task to thread waiting list for each block */
         for(DFSBlock dfsBlock : dfsBlocks)
         {
             load++;
             threadPool.submit(new MapExecuter(this,jobID,mapper,dfsBlock.getHostBlockPath(dataNodeID)));
         }
-        mapsLeft.put(jobID,dfsBlocks.size());
-        mapOutputFiles.put(jobID,new HashSet<String>());
     }
 
     public void run(){}
@@ -135,14 +138,17 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         outFiles.add(outFileName);
         mapOutputFiles.put(jobID,outFiles);
 
+        System.out.println("Map Completed and written to " + outFileName + "; "
+                + mapsLeft.get(jobID) + " Maps Left");
         /* If last map was executed, execute reduce */
         if (mapsLeft.get(jobID) == 0)
         {
             ReduceExecuter reduceExecuter =
                     new ReduceExecuter(this, jobID, reducers.get(jobID), outFiles);
             reduceExecuter.run();
+            mapsLeft.put(jobID,-1);
         }
-        mapsLeft.put(jobID,-1);
+
     }
 
     public int taskLoad(){return load;}
@@ -161,20 +167,21 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
             failureCounts.put(jobID,1);
         else
         {
-            int lastCount = failureCounts.put(jobID,failureCounts.get(jobID));
+            int lastCount = failureCounts.put(jobID,failureCounts.get(jobID)+1);
 
             /* Return if too many Failures */
             if(lastCount >= failureThreshold) {
                 try {
-					master.jobFailure(jobID,dataNodeID);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
+                    master.jobFailure(jobID,dataNodeID);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
                 return;
             }
         }
 
         /* Resubmit Job */
+        System.out.println("Resubmitting Map on File: " + inputFilePath);
         threadPool.submit(new MapExecuter(this,jobID,mappers.get(jobID),inputFilePath));
 
     }
@@ -182,15 +189,15 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
     public void jobFailure(String jobID)
     {
         try {
-			master.jobFailure(jobID,dataNodeID);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+            master.jobFailure(jobID,dataNodeID);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean jobCancelled(String jobID)
     {
-        return failureCounts.containsKey(jobID) && (failureCounts.get(jobID) > failureThreshold);
+        return (failureCounts.get(jobID) > failureThreshold);
     }
 
     /* Converts reduce output file to byte array and sends it to master */
@@ -207,31 +214,31 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
             jobFailure(jobId);
         }
         try {
-			master.jobCompleted(jobId,dataNodeID,bytes);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+            master.jobCompleted(jobId,dataNodeID,bytes);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void writeMROutput(ConcurrentHashMap<String,byte[]> output, String path)
+    public void writeMROutput(ConcurrentHashMap<String,byte[]> output, String jobID, String path)
     {
         /* Write each byte[] to a file on the given path */
-    	System.out.println("Writing reduce output back to client");
+        System.out.println("Writing reduce output back to client");
         for (String nodeID : output.keySet())
         {
-            String filePath = path + nodeID + "/Output.txt";
+            String filePath = path + dataNodeID + "/" + jobID + nodeID + "Output.txt";
             System.out.println(filePath);
             FileOutputStream fos;
-			try {
-				fos = new FileOutputStream(filePath);
-				fos.write(output.get(nodeID));
-	            fos.close();
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-            
+            try {
+                fos = new FileOutputStream(filePath);
+                fos.write(output.get(nodeID));
+                fos.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
         System.out.println("Reduce output files have been written");
 

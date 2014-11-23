@@ -19,46 +19,48 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JobHandler {
 
-   private String jobID;
-   private boolean active = false;
-   private Registry registry;
-   private ScheduleManagerInterface scheduler;
-   private DFSNameNodeInterface name_node;
-   private HashMap<String,Set<DFSBlock>> partitions;
-   private HashMap<String,TaskManagerInterface> taskManagers;
-   private HashSet<String> failedNodes;
-   private ConcurrentHashMap<String,byte[]> reduceOutputs;
-   private String callerHost;
-   private String outFilePath;
+    private String jobID;
+    private boolean active = false;
+    private Registry registry;
+    private ScheduleManagerInterface scheduler;
+    private DFSNameNodeInterface name_node;
+    private HashMap<String,Set<DFSBlock>> partitions;
+    private HashMap<String,TaskManagerInterface> taskManagers;
+    private HashSet<String> failedNodes;
+    private ConcurrentHashMap<String,byte[]> reduceOutputs;
+    private String callerHost;
+    private String outFilePath;
 
 
-   public JobHandler(String jobID, String callerHost, String outFilePath)
-   {
-       this.jobID = jobID;
-       partitions = new HashMap<>();
-       taskManagers = new HashMap<>();
-       failedNodes = new HashSet<>();
-       reduceOutputs = new ConcurrentHashMap<>();
-       this.callerHost = callerHost;
-       this.outFilePath = outFilePath;
-   }
+    public JobHandler(String jobID, String callerHost, String outFilePath)
+    {
+        this.jobID = jobID;
+        partitions = new HashMap<>();
+        taskManagers = new HashMap<>();
+        failedNodes = new HashSet<>();
+        reduceOutputs = new ConcurrentHashMap<>();
+        this.callerHost = callerHost;
+        this.outFilePath = outFilePath;
+    }
 
-   public void start(Set<String> file_ids) throws Exception{
-       this.active = true;
-       registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
-       name_node = (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
-       scheduler = (ScheduleManagerInterface) registry.lookup("Scheduler");
+    public void start(Set<String> file_ids) throws Exception{
+        this.active = true;
+        registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST, InternalConfig.REGISTRY_PORT);
+        name_node = (DFSNameNodeInterface) registry.lookup(InternalConfig.NAME_NODE_ID);
+        scheduler = (ScheduleManagerInterface) registry.lookup("Scheduler");
 
 
-       //Select a replica to map to for each block through scheduler
-       for(String file_id : file_ids)
-       {
-           Set<DFSBlock> dfsBlocks = name_node.getFileIDBlockMap().get(file_id);
-           if (dfsBlocks == null){
-        	   System.out.println("blocks NULL :(");
-           }
-           for(DFSBlock dfsBlock : dfsBlocks)
-           {
+        //Select a replica to map to for each block through scheduler
+        System.out.println("Job has " + file_ids.size() + " files");
+        for(String file_id : file_ids)
+        {
+            Set<DFSBlock> dfsBlocks = name_node.getFileIDBlockMap().get(file_id);
+            if (dfsBlocks == null){
+                System.out.println("blocks NULL :(");
+            }
+            System.out.println("File " + file_id + " has " + dfsBlocks.size() + " blocks");
+            for(DFSBlock dfsBlock : dfsBlocks)
+            {
                 String hostName = scheduler.selectReplica(jobID,dfsBlock);
                 HashSet<DFSBlock> blocks = null;
 
@@ -71,39 +73,39 @@ public class JobHandler {
 
                 //Store by which host replica is at
                 partitions.put(hostName,blocks);
-           }
-       }
+            }
+        }
 
        /* Send tasks to appropriate TaskManagers */
-       Set<String> hosts = partitions.keySet();
-       ConcurrentHashMap<String, Host> idToHostMap = name_node.getIdHostMap();
-       for(String host : hosts)
-       {
-    	   String data_node_id = findDataNodeID(idToHostMap, host);
-    	   String registry_host = name_node.getDataNodeRegistryInfo().get(data_node_id).getFirst();
-    	   int registry_port = name_node.getDataNodeRegistryInfo().get(data_node_id).getSecond();
+        Set<String> hosts = partitions.keySet();
+        ConcurrentHashMap<String, Host> idToHostMap = name_node.getIdHostMap();
+        for(String host : hosts)
+        {
+            String data_node_id = findDataNodeID(idToHostMap, host);
+            String registry_host = name_node.getDataNodeRegistryInfo().get(data_node_id).getFirst();
+            int registry_port = name_node.getDataNodeRegistryInfo().get(data_node_id).getSecond();
 
 		   /*Get the data node registry */
-    	   Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
-    	   TaskManagerInterface taskManagerInterface = (TaskManagerInterface)
-                   data_node_registry.lookup(InternalConfig.generateTaskManagerId(host));
-    	   taskManagerInterface.addJob(jobID,partitions.get(host));
-           taskManagers.put(host,taskManagerInterface);
-       }
-   }
-   
-	private String findDataNodeID(ConcurrentHashMap<String, Host> idToHostMap, String host) {
-		for (String s : idToHostMap.keySet()){
-			if (idToHostMap.get(s).hostname.equals(host)){
-				return s;
-			}
-		}
-		return null;
-	}
+            Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
+            TaskManagerInterface taskManagerInterface = (TaskManagerInterface)
+                    data_node_registry.lookup(InternalConfig.generateTaskManagerId(host));
+            taskManagerInterface.addJob(jobID,partitions.get(host));
+            taskManagers.put(host,taskManagerInterface);
+        }
+    }
 
-   public boolean getActive() {return this.active;}
+    private String findDataNodeID(ConcurrentHashMap<String, Host> idToHostMap, String host) {
+        for (String s : idToHostMap.keySet()){
+            if (idToHostMap.get(s).hostname.equals(host)){
+                return s;
+            }
+        }
+        return null;
+    }
 
-   public String getState() throws Exception {
+    public boolean getActive() {return this.active;}
+
+    public String getState() throws Exception {
 
         String state = "";
         if(partitions.size() == 0) {
@@ -159,7 +161,7 @@ public class JobHandler {
 
 
             /* Tell TaskManager to write files */
-            taskManagerInterface.writeMROutput(reduceOutputs,outFilePath);
+            taskManagerInterface.writeMROutput(reduceOutputs,jobID,outFilePath);
 
         }
     }

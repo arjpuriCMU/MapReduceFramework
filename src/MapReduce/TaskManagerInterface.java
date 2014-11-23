@@ -22,5 +22,5 @@ public interface TaskManagerInterface extends Remote {
     public boolean jobCancelled(String jobID) throws RemoteException;
     public void reduceComplete(String jobId,String filePath) throws RemoteException;
     public int mapsLeft(String jobID) throws RemoteException;
-    public void writeMROutput(ConcurrentHashMap<String,byte[]> output, String path) throws RemoteException;
+    public void writeMROutput(ConcurrentHashMap<String,byte[]> output,String jobID, String path) throws RemoteException;
 }
