@@ -3,6 +3,7 @@ package WordCount;
 import java.io.File;
 import java.io.IOException;
 
+import Config.InternalConfig;
 import MapReduce.MapReducerClient;
 import MapReduce.MapReducerConfig;
 import Util.FileFunctions;
@@ -15,10 +16,8 @@ public class WordCount {
 		MapReducerConfig config = new MapReducerConfig();
 		config.setMapperClass(WordCountMap.class);
 		config.setReducerClass(WordCountReduce.class);
-//		config.setInputFormat(WordInputFormat.class);
-//		config.setOutputFromat(WordOutputFormat.class);
 		config.setInputFile("./src/WordCount/TropicThunderQuote.txt");
-		config.setOutputFilePath("./");
+		config.setOutputFilePath(InternalConfig.DFS_STORAGE_PATH);
 		File tropicThunder = new File("./src/WordCount/TropicThunderQuote.txt");
 		File[] files = new File[1];
 		files[0] = tropicThunder;

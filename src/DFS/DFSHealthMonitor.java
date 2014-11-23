@@ -43,7 +43,7 @@ public class DFSHealthMonitor extends UnicastRemoteObject implements Runnable, H
 	@Override
 	public void addNode(String node) throws RemoteException{
 		node_ids.add(node);
-		node_health_map.put(node, 200);
+		node_health_map.put(node, 100);
 	}
 
 	private void addToRegistry() {

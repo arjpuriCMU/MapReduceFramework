@@ -216,6 +216,7 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
     public void writeMROutput(ConcurrentHashMap<String,byte[]> output, String path)
     {
         /* Write each byte[] to a file on the given path */
+    	System.out.println("Writing reduce output back to client");
         for (String nodeID : output.keySet())
         {
             String filePath = path + nodeID + "/Output.txt";

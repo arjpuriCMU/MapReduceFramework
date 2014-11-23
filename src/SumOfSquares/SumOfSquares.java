@@ -3,6 +3,7 @@ package SumOfSquares;
 import java.io.File;
 import java.io.IOException;
 
+import Config.InternalConfig;
 import MapReduce.MapReducerClient;
 import MapReduce.MapReducerConfig;
 import Util.Host;
@@ -12,9 +13,9 @@ public class SumOfSquares {
 		MapReducerConfig config = new MapReducerConfig();
 		config.setMapperClass(SumOfSquaresMap.class);
 		config.setReducerClass(SumOfSquaresReduce.class);
-		config.setOutputFilePath("./SumOfSquares");
-		File squares1 = new File("./SumOfSquares/squares1.txt");
-		File squares2 = new File("./SumOfSquares/squares2.txt");
+		config.setOutputFilePath(InternalConfig.DFS_STORAGE_PATH);
+		File squares1 = new File("./src/SumOfSquares/squares1.txt");
+		File squares2 = new File("./src/SumOfSquares/squares2.txt");
 		File[] files = new File[2];
 		files[0] = squares1;
 		files[1] = squares2;
