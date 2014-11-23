@@ -104,6 +104,7 @@ public class MapReducerClient {
 		/* Create the job on the master and print out jobID for programmer to monitor */
         String jobID = master.createJob(map_reducer_id,InetAddress.getLocalHost().getHostName(),
         		config,map_class_byte_array,reduce_class_byte_array,map_tuple,red_tuple, config.getOutputFilePath());
+        System.out.println("Job ID: " + jobID);
         Set<String> file_ids = SendFilesToNameNode(jobID, files);
         master.startJob(jobID,file_ids,config);
         jobIDs.add(jobID);
@@ -112,7 +113,8 @@ public class MapReducerClient {
 	private Set<String> SendFilesToNameNode(String jobID, File[] files) {
         Set<String> file_ids = null;
 		for (File file : files){
-			byte[] byte_array = new byte[(int) file.length()]; //assume that file is always small enough to fit
+            System.out.println("Sending File: " + file);
+            byte[] byte_array = new byte[(int) file.length()]; //assume that file is always small enough to fit
 			FileInputStream fis;
 			/*read the input file and convert to byte array for name node */
 			try {
