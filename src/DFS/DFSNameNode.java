@@ -305,6 +305,7 @@ public class DFSNameNode extends UnicastRemoteObject implements DFSNameNodeInter
 		for (String node_id : this.node_ids){
 			data_node_queue.addLast(node_id);
 		}
+		
 		//Loop through all the files that need to be distributed
 		for (int i = 0; i < list.size(); i++){
 			/*Sets up partition, and creates first block */
