@@ -1,7 +1,7 @@
 package MapReduce;
 
 import IOFormat.KeyValuePair;
-import IOFormat.MapperCollector;
+import IOFormat.MRCollector;
 
 import java.io.*;
 import java.util.*;
@@ -38,7 +38,7 @@ public class MapExecuter implements Runnable {
         }
 
         /* Create collecter and execute user map on each line of input file */
-        MapperCollector collector = new MapperCollector();
+        MRCollector collector = new MRCollector();
         String line;
         try {
             while ((line = br.readLine()) != null) {
@@ -60,7 +60,8 @@ public class MapExecuter implements Runnable {
         }
 
         /* Get SortedMap containing map output */
-       ArrayList<KeyValuePair> mapOutput = collector.getMapperOutputCollection();
+        ArrayList<KeyValuePair> mapOutput = collector.getOutputCollection();
+        Collections.sort(mapOutput);
 
         /* Write each key value pair to file */
         if(writer == null) {

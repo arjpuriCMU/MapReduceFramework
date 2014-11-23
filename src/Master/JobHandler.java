@@ -43,7 +43,7 @@ public class JobHandler {
        scheduler = (ScheduleManagerInterface) registry.lookup("Scheduler");
 
 
-       //Select replicas of each block through scheduler
+       //Select a replica to map to for each block through scheduler
        for(String file_id : file_ids)
        {
            Set<DFSBlock> dfsBlocks = name_node.getFileIDBlockMap().get(file_id);
@@ -58,6 +58,8 @@ public class JobHandler {
                     blocks = new HashSet<DFSBlock>();
 
                 blocks.add(dfsBlock);
+
+                //Store by which host replica is at
                 partitions.put(hostName,blocks);
            }
        }
@@ -65,12 +67,14 @@ public class JobHandler {
        /* Send tasks to appropriate TaskManagers */
        Set<String> hosts = partitions.keySet();
        ConcurrentHashMap<String, Host> idToHostMap = name_node.getIdHostMap();
-       for(String host : hosts){
+       for(String host : hosts)
+       {
     	   System.out.println(host);
     	   String data_node_id = findDataNodeID(idToHostMap, host);
     	   String registry_host = name_node.getDataNodeRegistryInfo().get(data_node_id).getFirst();
     	   int registry_port = name_node.getDataNodeRegistryInfo().get(data_node_id).getSecond();
-		/*Get the data node registry */
+
+		   /*Get the data node registry */
     	   Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
     	   TaskManagerInterface taskManagerInterface = (TaskManagerInterface) data_node_registry.lookup(InternalConfig.generateTaskManagerId(host));
     	   taskManagerInterface.addJob(jobID,partitions.get(host));
@@ -83,7 +87,6 @@ public class JobHandler {
 				return s;
 			}
 		}
-		System.out.println("izzz NULL!");
 		return null;
 	}
 

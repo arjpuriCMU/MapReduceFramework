@@ -24,8 +24,8 @@ public class ScheduleManager extends UnicastRemoteObject implements ScheduleMana
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	//Queue<DFSBlock>
     Registry registry;
+
     public ScheduleManager() throws RemoteException
     {
         try {
@@ -35,16 +35,15 @@ public class ScheduleManager extends UnicastRemoteObject implements ScheduleMana
         }
     }
 
-    public void run()
-    {
+    public void run(){}
 
-    }
-
-    /* Returns hostName of replica to map to */
+    /* Returns hostName of replica to map to (minimum load selection) */
     public String selectReplica(String jobID, DFSBlock block) throws RemoteException{
+
         Set<Host> replicaHosts = block.getBlockHosts();
         int minLoad = -1;
         String minHostName = "";
+
         /*Get the name node from the central registry */
     	DFSNameNodeInterface name_node = null;
 		try {
@@ -52,6 +51,7 @@ public class ScheduleManager extends UnicastRemoteObject implements ScheduleMana
 		} catch (NotBoundException e1) {
 			e1.printStackTrace();
 		}
+
     	/* Get the corresponding data node's registry info */
     	ConcurrentHashMap<String, Host> idToHostMap = name_node.getIdHostMap();
         for(Host replicaHost : replicaHosts)
@@ -61,23 +61,24 @@ public class ScheduleManager extends UnicastRemoteObject implements ScheduleMana
             	String data_node_id = findDataNodeID(idToHostMap, replicaHost);
             	String registry_host = name_node.getDataNodeRegistryInfo().get(data_node_id).getFirst();
     			int registry_port = name_node.getDataNodeRegistryInfo().get(data_node_id).getSecond();
+
     			/*Get the data node registry */
     			Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
-                taskManager =
-                    (TaskManagerInterface) data_node_registry.lookup(InternalConfig.generateTaskManagerId(replicaHost.hostname));
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            } catch (NotBoundException e) {
+                taskManager = (TaskManagerInterface)
+                        data_node_registry.lookup(InternalConfig.generateTaskManagerId(replicaHost.hostname));
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             int load = taskManager.taskLoad();
 
+            //Store if first or minimum
             if(minLoad < 0 || load < minLoad)
             {
                 minLoad = load;
                 minHostName = replicaHost.hostname;
             }
         }
+        //Return hostname of chosen replica
         return minHostName;
     }
 

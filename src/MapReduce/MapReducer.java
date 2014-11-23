@@ -30,9 +30,7 @@ import Util.Tuple;
  * MapReducer is the object that handles interactions with the master map
  * reducer node. So if a user wants to map reduce a job, it first creates a
  * MapReducer object which will have a dataNode utilized for other active
- * jobs in the system. When the user wants to run a job on this MapReducer,
- * a class extending the MapReduceInterface must be created and then sent
- * to runJob along with the input files of the job.
+ * jobs in the system.
  */
 public class MapReducer {
 

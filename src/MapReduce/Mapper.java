@@ -1,11 +1,9 @@
 package MapReduce;
 
-import IOFormat.MapperCollector;
+import IOFormat.MRCollector;
 
 public interface Mapper {
-	
-	//public void map(Object key, Object value, MapperCollector mapperOutputCollector);
-    public void map(String line, MapperCollector mapperOutputCollector);
-	public void sex();
+
+	       public void map(String line, MRCollector mapperOutputCollector);
 
 }

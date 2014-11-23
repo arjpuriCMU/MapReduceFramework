@@ -1,8 +1,7 @@
 package MapReduce;
 
+        import IOFormat.MRCollector;
         import IOFormat.KeyValuePair;
-import IOFormat.MapperCollector;
-import IOFormat.ReducerCollector;
 
         import java.io.*;
 import java.util.*;
@@ -46,7 +45,7 @@ public class ReduceExecuter implements Runnable {
                 while ((line = br.readLine()) != null) {
                     String[] kvp = line.split("=>");
                     ArrayList<String> vals = null;
-                    if(mergedMapOutput.containsKey(kvp[1]))
+                    if(mergedMapOutput.containsKey(kvp[0]))
                         vals = mergedMapOutput.get(kvp[0]);
                     else
                         vals = new ArrayList<>();
@@ -59,13 +58,11 @@ public class ReduceExecuter implements Runnable {
                 e.printStackTrace();
             }
         }
-        System.out.println("mapsize" + mergedMapOutput.size());
 
         /* Collect Reduce Output */
-        ReducerCollector collector = new ReducerCollector();
+        MRCollector collector = new MRCollector();
         for(String key : mergedMapOutput.keySet())
         {
-        	System.out.println("reducing " + key);
             reducer.reduce(key,mergedMapOutput.get(key),collector);
         }
 
@@ -81,14 +78,13 @@ public class ReduceExecuter implements Runnable {
         }
 
         /* Get SortedMap containing map output */
-        ArrayList<KeyValuePair> reduceOutput = collector.getReducerOutputCollection();
+        ArrayList<KeyValuePair> reduceOutput = collector.getOutputCollection();
 
         /* Write each key value pair to file */
         if(writer == null) {
             //TODO: FAILURE HANDLING
             return;
         }
-        System.out.println("reduce output len: " + reduceOutput.size());
         for(KeyValuePair kvp : reduceOutput) {
             writer.println(kvp.toString());
         }

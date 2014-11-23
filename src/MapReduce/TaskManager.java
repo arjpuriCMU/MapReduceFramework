@@ -39,13 +39,13 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
 	private static final long serialVersionUID = 1L;
 	public String dataNodeID;
     public int cores;
-    public int load;
+    private int load;
     public ConcurrentHashMap<String, Integer> mapsLeft;
     public ConcurrentHashMap<String,HashSet<String>> mapOutputFiles;
     public ConcurrentHashMap<String,Mapper> mappers;
     public ConcurrentHashMap<String,Reducer> reducers;
     public Registry registry;
-    ExecutorService threadPool;
+    public ExecutorService threadPool;
     public MapReduceMasterInterface master;
     public DataNodeInterface current_data_node;
 
@@ -71,17 +71,15 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
 			current_data_node = (DataNodeInterface) data_node_registry.lookup(dataNodeID);
 			/*bind task manager to data node's registry */
 			data_node_registry.bind(InternalConfig.generateTaskManagerId(current_data_node.getHostName()), this);
-		} catch (NotBoundException e1) {
-			e1.printStackTrace();
-		} catch (AlreadyBoundException e) {
-			e.printStackTrace();
-		}
+		} catch (Exception e1) {
+            e1.printStackTrace();
+        }
     }
 
-    public void addJob(String jobID, Set<DFSBlock> dfsBlocks) throws RemoteException
+    public synchronized void addJob(String jobID, Set<DFSBlock> dfsBlocks) throws RemoteException
     {
     	
-        /*Get Mapper and Reducer Classes */
+        /* Get Mapper and Reducer Classes */
     	JavaCustomClassLoader map_loader = new JavaCustomClassLoader(master.getClassMap().get(jobID).getFirst());
     	Class<?> mapper_class =
     			map_loader.findClass(master.getClassNameMap().get(jobID).getFirst());
@@ -89,30 +87,37 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
     	Class<?> reducer_class = reduce_loader.findClass(master.getClassNameMap().get(jobID).getSecond());
     	Mapper mapper = null;
     	Reducer reducer = null;
+
         try {
+            /* Instantiate and store mapper and reducers */
             mapper =  (Mapper) mapper_class.newInstance();
             reducer = (Reducer) reducer_class.newInstance();
-            mapper.sex(); /* testing only dont judge */
-            reducer.poop();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+            mappers.put(jobID,mapper);
+            reducers.put(jobID,reducer);
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
+        /* Add map task to thread waiting list for each block */
         for(DFSBlock dfsBlock : dfsBlocks)
         {
             load++;
             threadPool.submit(new MapExecuter(this,jobID,mapper,dfsBlock.getHostBlockPath(dataNodeID)));
         }
         mapsLeft.put(jobID,dfsBlocks.size());
+        mapOutputFiles.put(jobID,new HashSet<String>());
     }
 
     public void run(){}
 
-    public void checkReduce(String jobID, String outFileName)
+    /* Called upon completion of each Map task. If there no more maps left
+       then a reduce task is executed. Method is synchronized so reduce
+       can only be launched once. Since the map thread is idling while the
+       reduce is executed, the processor usage is still optimized.
+     */
+    public synchronized void checkReduce(String jobID, String outFileName)
     {
-        //TODO: lock around load
+        /* Decrement mapsLeft value and store intermediate filename */
         load--;
         mapsLeft.put(jobID,mapsLeft.get(jobID) - 1);
         HashSet<String> outFiles =  mapOutputFiles.get(jobID);
@@ -120,7 +125,6 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         mapOutputFiles.put(jobID,outFiles);
 
         /* If last map was executed, execute reduce */
-        System.out.println(mapsLeft.get(jobID));
         if (mapsLeft.get(jobID) == 0)
         {
             ReduceExecuter reduceExecuter =

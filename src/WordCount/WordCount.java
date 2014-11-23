@@ -3,7 +3,6 @@ package WordCount;
 import java.io.File;
 import java.io.IOException;
 
-import MapReduce.MapReduceInterface;
 import MapReduce.MapReducer;
 import MapReduce.MapReducerConfig;
 import Util.FileFunctions;

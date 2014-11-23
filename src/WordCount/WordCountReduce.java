@@ -2,14 +2,14 @@ package WordCount;
 
 import java.util.ArrayList;
 
-import IOFormat.ReducerCollector;
+import IOFormat.MRCollector;
 import MapReduce.Reducer;
 
 public class WordCountReduce implements Reducer{
 
 	@Override
 	public void reduce(String key, ArrayList<String> value,
-			ReducerCollector reducerCollector) {
+			MRCollector reducerCollector) {
 		reducerCollector.addOutput(key, value.size());
 	}
 	public void poop() {
