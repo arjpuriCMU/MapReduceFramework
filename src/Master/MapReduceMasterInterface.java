@@ -2,13 +2,9 @@ package Master;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.server.RemoteObject;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import DFS.DFSDataNode;
-import DFS.DataNodeInterface;
 import MapReduce.MapReducerConfig;
 import Util.Host;
 import Util.Tuple;
@@ -25,6 +21,7 @@ public interface MapReduceMasterInterface extends Remote {
     public void setName_node_host(Host name_node_host) throws RemoteException;
     public void start() throws RemoteException;
 	public String getMasterHost() throws RemoteException;
-
+    public void jobFailure(String jobID, String dataNodeID);
+    public void jobCompleted(String jobID, String nodeID, byte[] output);
 
 }

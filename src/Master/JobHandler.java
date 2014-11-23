@@ -2,9 +2,7 @@ package Master;
 
 import Config.InternalConfig;
 import DFS.DFSBlock;
-import DFS.DFSNameNode;
 import DFS.DFSNameNodeInterface;
-import MapReduce.TaskManager;
 import MapReduce.TaskManagerInterface;
 import Util.Host;
 
@@ -12,10 +10,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.jar.JarFile;
 
 
 /**
@@ -29,11 +25,17 @@ public class JobHandler {
    private ScheduleManagerInterface scheduler;
    private DFSNameNodeInterface name_node;
    private HashMap<String,Set<DFSBlock>> partitions;
+   private HashMap<String,TaskManagerInterface> taskManagers;
+   private HashSet<String> failedNodes;
+   private ConcurrentHashMap<String,byte[]> reduceOutputs;
 
    public JobHandler(String jobID)
    {
        this.jobID = jobID;
-       partitions = new HashMap<String,Set<DFSBlock>>();
+       partitions = new HashMap<>();
+       taskManagers = new HashMap<>();
+       failedNodes = new HashSet<>();
+       reduceOutputs = new ConcurrentHashMap<>();
    }
 
    public void start(Set<String> file_ids) throws Exception{
@@ -69,7 +71,6 @@ public class JobHandler {
        ConcurrentHashMap<String, Host> idToHostMap = name_node.getIdHostMap();
        for(String host : hosts)
        {
-    	   System.out.println(host);
     	   String data_node_id = findDataNodeID(idToHostMap, host);
     	   String registry_host = name_node.getDataNodeRegistryInfo().get(data_node_id).getFirst();
     	   int registry_port = name_node.getDataNodeRegistryInfo().get(data_node_id).getSecond();
@@ -78,6 +79,7 @@ public class JobHandler {
     	   Registry data_node_registry = LocateRegistry.getRegistry(registry_host,registry_port);
     	   TaskManagerInterface taskManagerInterface = (TaskManagerInterface) data_node_registry.lookup(InternalConfig.generateTaskManagerId(host));
     	   taskManagerInterface.addJob(jobID,partitions.get(host));
+           taskManagers.put(host,taskManagerInterface);
        }
    }
    
@@ -91,5 +93,55 @@ public class JobHandler {
 	}
 
    public boolean getActive() {return this.active;}
+
+   public String getState() throws Exception {
+
+        String state = "";
+        if(partitions.size() == 0) {
+            return "Job not yet scheduled.";
+        }
+
+        /* Get job state from each host */
+        for(String host : partitions.keySet())
+        {
+            int mapsLeft = taskManagers.get(host).mapsLeft(jobID);
+            String nodeID = taskManagers.get(host).getDataNodeID();
+
+
+            if(failedNodes.contains(nodeID))
+            {
+                state = state + "Failure during execution on " + nodeID + "\n";
+            }
+            else if (mapsLeft < 0)
+            {
+                state = state + "All tasks completed on " + nodeID + "\n";
+            }
+            else if(mapsLeft == 0)
+            {
+                state = state + "Map tasks completed and reduce running on " + nodeID + "\n";
+            }
+            else
+            {
+                state = state + mapsLeft + "map tasks still running or queued on " + nodeID + "\n";
+            }
+        }
+        return state;
+    }
+
+    public void nodeFailed(String nodeID){
+        failedNodes.add(nodeID);
+    }
+
+    public synchronized void nodeCompleted(String nodeID, byte[] output)
+    {
+        /* Store reduce output */
+        reduceOutputs.put(nodeID,output);
+
+        /* Check if Job Complete */
+        if (reduceOutputs.size() == partitions.size())
+        {
+
+        }
+    }
 
 }

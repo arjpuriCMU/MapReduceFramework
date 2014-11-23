@@ -33,13 +33,12 @@ public class ReduceExecuter implements Runnable {
         String tempPath = null;
         for(String filePath : filePaths)
         {
-        	tempPath = filePath;
             /* Create Reader for File */
             try {
                 br = new BufferedReader(new FileReader(filePath));
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
+                taskManager.jobFailure(jobID);
+                return;            }
 
             try {
                 while ((line = br.readLine()) != null) {
@@ -55,8 +54,11 @@ public class ReduceExecuter implements Runnable {
 
                 br.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                taskManager.jobFailure(jobID);
+                return;
             }
+
+            tempPath = filePath;
         }
 
         /* Collect Reduce Output */
@@ -67,29 +69,30 @@ public class ReduceExecuter implements Runnable {
         }
 
         /* Setup Reduce Output File */
-        String outFilePath = tempPath.replace(".txt", "reduce.txt");
+        String outFile = null;
+        if (tempPath != null)
+            outFile = tempPath.replace(".txt","_reduceOutput.txt");
+
         PrintWriter writer = null;
         try {
-            writer = new PrintWriter(outFilePath, "UTF-8");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            writer = new PrintWriter(outFile, "UTF-8");
+        } catch (Exception e) {
+            taskManager.jobFailure(jobID);
+            return;
         }
 
         /* Get SortedMap containing map output */
         ArrayList<KeyValuePair> reduceOutput = collector.getOutputCollection();
 
         /* Write each key value pair to file */
-        if(writer == null) {
-            //TODO: FAILURE HANDLING
-            return;
-        }
         for(KeyValuePair kvp : reduceOutput) {
             writer.println(kvp.toString());
         }
         writer.close();
         
+        /* Notify Task Manager of outFilePath */
+        taskManager.reduceComplete(jobID,outFile);
+
 
     }
 

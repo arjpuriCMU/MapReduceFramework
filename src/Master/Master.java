@@ -101,28 +101,6 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 	public Host getName_node_host() {
 		return name_node_host;
 	}
-	
-
-//	
-//	public void proxyBindDataNode(String data_nodeId, DataNodeInterface dfsDataNode){
-//		System.out.print("Binding " + data_nodeId );
-//		try {
-//			main_registry.bind(data_nodeId, dfsDataNode);
-//		} catch (RemoteException | AlreadyBoundException e) {
-//			e.printStackTrace();
-//		}
-//	}
-//	
-//	/*This allows other remote objects to bind themselves to the registry from a non-local host */
-//	public void proxyBind(String id, RemoteObject o){
-//		System.out.print("Binding " + id );
-//		try {
-//			main_registry.bind(id, o);
-//		} catch (RemoteException | AlreadyBoundException e) {
-//			e.printStackTrace();
-//		}
-//	}
-
 
 	public void setName_node_host(Host name_node_host) {
 		this.name_node_host = name_node_host;
@@ -216,7 +194,25 @@ public class Master extends UnicastRemoteObject implements MapReduceMasterInterf
 
 		}
 	}
-		
+
+    /* returns String with job information */
+    public String getState(String jobID) throws Exception
+    {
+        if(!jobs.containsKey(jobID))
+            return "Not a valid JobID";
+        return jobs.get(jobID).getState();
+    }
+
+    /* Called by TaskManager to report job failure */
+    public void jobFailure(String jobID, String dataNodeID)
+    {
+        jobs.get(jobID).nodeFailed(dataNodeID);
+    }
+
+    /* Called by TaskManager to report job completion */
+    public void jobCompleted(String jobID, String nodeID, byte[] output) {
+        jobs.get(jobID).nodeCompleted(nodeID,output);
+    }
 
 
 	

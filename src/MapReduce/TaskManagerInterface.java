@@ -13,4 +13,5 @@ public interface TaskManagerInterface extends Remote {
     public void addJob(String jobID, Set<DFSBlock> dfsBlocks) throws RemoteException;
     public int taskLoad() throws RemoteException;
     public String getDataNodeID() throws RemoteException;
+    public int mapsLeft(String jobID);
 }

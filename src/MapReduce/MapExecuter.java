@@ -27,6 +27,10 @@ public class MapExecuter implements Runnable {
 
     public void run()
     {
+        /* Check if Job Cancelled */
+        if(taskManager.jobCancelled(jobID))
+            return;
+
         /* READ AND MAP */
 
         /* open reader */
@@ -34,7 +38,8 @@ public class MapExecuter implements Runnable {
         try {
             br = new BufferedReader(new FileReader(inputFilePath));
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            taskManager.mapFailure(jobID,inputFilePath);
+            return;
         }
 
         /* Create collecter and execute user map on each line of input file */
@@ -47,7 +52,8 @@ public class MapExecuter implements Runnable {
 
             br.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            taskManager.mapFailure(jobID, inputFilePath);
+            return;
         }
 
         /* Setup Intermediate Map Output File */
@@ -56,7 +62,8 @@ public class MapExecuter implements Runnable {
         try {
             writer = new PrintWriter(outFilePath, "UTF-8");
         } catch (Exception e) {
-            e.printStackTrace();
+            taskManager.mapFailure(jobID, inputFilePath);
+            return;
         }
 
         /* Get SortedMap containing map output */
@@ -64,11 +71,6 @@ public class MapExecuter implements Runnable {
         Collections.sort(mapOutput);
 
         /* Write each key value pair to file */
-        if(writer == null) {
-            //TODO: FAILURE HANDLING
-            return;
-        }
-
         for(KeyValuePair kvp : mapOutput) {
             writer.println(kvp.toString());
         }

@@ -11,6 +11,7 @@ import Util.JavaCustomClassLoader;
 import Util.Tuple;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.AlreadyBoundException;
@@ -19,6 +20,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -48,8 +50,12 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
     public ExecutorService threadPool;
     public MapReduceMasterInterface master;
     public DataNodeInterface current_data_node;
+    private ConcurrentHashMap<String,Integer> failureCounts;
+    private int failureThreshold = 3;
 
-    public TaskManager(String dataNodeID, int cores) throws RemoteException{
+
+    public TaskManager(String dataNodeID, int cores) throws RemoteException
+    {
         this.dataNodeID = dataNodeID;
         this.cores = cores;
         mapsLeft = new ConcurrentHashMap<String,Integer>();
@@ -57,6 +63,8 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
         mappers = new ConcurrentHashMap<>();
         reducers = new ConcurrentHashMap<>();
         threadPool = Executors.newFixedThreadPool(cores);
+        failureCounts = new ConcurrentHashMap<>();
+
         /* Master registry */
         registry = LocateRegistry.getRegistry(InternalConfig.REGISTRY_HOST,InternalConfig.REGISTRY_PORT);
         try {
@@ -131,9 +139,62 @@ public class TaskManager extends UnicastRemoteObject implements Runnable,TaskMan
                     new ReduceExecuter(this, jobID, reducers.get(jobID), outFiles);
             reduceExecuter.run();
         }
+        mapsLeft.put(jobID,-1);
     }
 
     public int taskLoad(){return load;}
 
+    public int mapsLeft(String jobID) {
+        return mapsLeft.get(jobID);
+    }
+
     public String getDataNodeID(){return dataNodeID;}
+
+    public void mapFailure(String jobID, String inputFilePath)
+    {
+        /* Update Failure Count for Job */
+
+        if(!failureCounts.containsKey(jobID))
+            failureCounts.put(jobID,1);
+        else
+        {
+            int lastCount = failureCounts.put(jobID,failureCounts.get(jobID));
+
+            /* Return if too many Failures */
+            if(lastCount >= failureThreshold) {
+                master.jobFailure(jobID,dataNodeID);
+                return;
+            }
+        }
+
+        /* Resubmit Job */
+        threadPool.submit(new MapExecuter(this,jobID,mappers.get(jobID),inputFilePath));
+
+    }
+
+    public void jobFailure(String jobID)
+    {
+        master.jobFailure(jobID,dataNodeID);
+    }
+
+    public boolean jobCancelled(String jobID)
+    {
+        return failureCounts.containsKey(jobID) && (failureCounts.get(jobID) > failureThreshold);
+    }
+
+    /* Converts reduce output file to byte array and sends it to master */
+    public void reduceComplete(String jobId,String filePath)
+    {
+        File file = new File(filePath);
+
+        byte[] bytes = new byte[(int) file.length()];
+        try {
+            FileInputStream fileInputStream = new FileInputStream(file);
+            fileInputStream.read(bytes);
+        }
+        catch (Exception e) {
+            jobFailure(jobId);
+        }
+        master.jobCompleted(jobId,dataNodeID,bytes);
+    }
 }
